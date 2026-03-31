@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "poetry"
+
+      - name: Instalar Poetry
+        run: pipx install poetry
+
+      - name: Instalar dependencias
+        run: poetry install
+
+      - name: Correr tests
+        run: poetry run pytest

@@ -5,6 +5,9 @@ description = "API de ejemplo con FastAPI"
 authors = ["Your Name <you@example.com>"]
 package-mode = false
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.135.1"
