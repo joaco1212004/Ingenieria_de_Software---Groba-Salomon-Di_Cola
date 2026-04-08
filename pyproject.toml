@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Ingenieria_de_Software---Groba-Salomon-Di_Cola"
-version = "0.1.0"
+version = "1.0.0"
 description = "API de ejemplo con FastAPI"
 authors = ["Your Name <you@example.com>"]
 package-mode = false
