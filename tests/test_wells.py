@@ -3,7 +3,6 @@ from api.main import api
 
 client = TestClient(api)
 
-
 def test_get_wells_ok():
     response = client.get(
         "/api/v1/wells",
@@ -13,8 +12,9 @@ def test_get_wells_ok():
 
     assert response.status_code == 200
     data = response.json()
-    assert "wells" in data
-
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert "id_well" in data[0]
 
 def test_get_wells_no_api_key():
     response = client.get(

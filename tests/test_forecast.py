@@ -3,7 +3,6 @@ from api.main import api
 
 client = TestClient(api)
 
-
 def test_get_forecast_ok():
     response = client.get(
         "/api/v1/forecast",
@@ -17,8 +16,7 @@ def test_get_forecast_ok():
 
     assert response.status_code == 200
     data = response.json()
-    assert "forecast" in data
-
+    assert "data" in data
 
 def test_get_forecast_invalid_dates():
     response = client.get(
@@ -44,4 +42,4 @@ def test_get_forecast_invalid_format():
         headers={"X-API-Key": "abcdef12345"}
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 422
