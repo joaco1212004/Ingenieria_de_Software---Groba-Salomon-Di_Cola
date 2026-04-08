@@ -45,3 +45,24 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t predictiva-api:${{ github.sha }} .
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-docker
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Ejecutar comandos via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: api-hidraulicos-tipazos.duckdns.org
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd Ingenieria_de_Software---Groba-Salomon-Di_Cola
+            git pull origin main
+            docker build -t predictiva-api .
+            docker stop mi-api || true
+            docker rm mi-api || true
+            docker run -d --name mi-api -p 8000:8000 predictiva-api
