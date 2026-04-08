@@ -27,7 +27,7 @@ jobs:
         run: poetry install
 
       - name: Análisis estático de código (Black)
-        run: poetry run black --check . || echo "Ignorando fallos de estilo momentáneamente"
+        run: poetry run black --check .
 
       - name: Correr tests
         run: poetry run pytest
