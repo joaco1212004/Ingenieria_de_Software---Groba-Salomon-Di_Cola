@@ -62,7 +62,5 @@ jobs:
           script: |
             cd Ingenieria_de_Software---Groba-Salomon-Di_Cola
             git pull origin main
-            docker build -t predictiva-api .
-            docker stop mi-api || true
-            docker rm mi-api || true
-            docker run -d --name mi-api -p 8000:8000 predictiva-api
+            docker compose down
+            docker compose up -d --build
