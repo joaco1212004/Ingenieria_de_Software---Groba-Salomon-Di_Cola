@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 
 from api.forecast.routes import router as forecast_router
+from api.metrics import PrometheusMiddleware, metrics_endpoint
 from api.wells.routes import router as wells_router
 
 api = FastAPI(
@@ -11,5 +12,9 @@ api = FastAPI(
     description="Mock del servicio API Rest para consultas de pronostico",
 )
 
+api.add_middleware(PrometheusMiddleware)
+
 api.include_router(forecast_router, prefix="/api/v1", tags=["forecast"])
 api.include_router(wells_router, prefix="/api/v1", tags=["wells"])
+
+api.add_route("/metrics", metrics_endpoint, methods=["GET"])
