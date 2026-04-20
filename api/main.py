@@ -17,4 +17,12 @@ api.add_middleware(PrometheusMiddleware)
 api.include_router(forecast_router, prefix="/api/v1", tags=["forecast"])
 api.include_router(wells_router, prefix="/api/v1", tags=["wells"])
 
-api.add_route("/metrics", metrics_endpoint, methods=["GET"])
+api.add_api_route(
+    "/metrics",
+    metrics_endpoint,
+    methods=["GET"],
+    summary="Prometheus Metrics",
+    description="Devuelve métricas de Prometheus en formato text/plain",
+    responses={200: {"description": "Métricas en formato Prometheus"}},
+    tags=["monitoring"]
+)
