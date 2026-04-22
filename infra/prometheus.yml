@@ -1,0 +1,46 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: predictiva-api
+    environment: fase1
+
+rule_files:
+  - /etc/prometheus/rules/alerts.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+scrape_configs:
+  # ─── Métrica sintética: ¿Prometheus está vivo? ────────────────────────────
+  - job_name: prometheus
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  # ─── API: FastAPI + Prometheus middleware (latencia, errores, requests) ────
+  - job_name: predictiva-api
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - api:8000
+        labels:
+          service: predictiva-api
+          env: fase1
+          component: api
+
+  # ─── Host: node-exporter (CPU, Memoria, Disco, Red, etc.) ──────────────────
+  - job_name: node-exporter
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - node-exporter:9100
+        labels:
+          service: node-exporter
+          env: fase1
+          component: host

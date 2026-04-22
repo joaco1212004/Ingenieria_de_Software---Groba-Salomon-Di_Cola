@@ -1,0 +1,86 @@
+groups:
+  - name: predictiva-api-alerts
+    interval: 30s
+    rules:
+      # ─── Disponibilidad: Servicio caído ────────────────────────────────────
+      - alert: ServicioCaido
+        expr: up{job="predictiva-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "API Predictiva caída"
+          description: "El servicio en {{ $labels.instance }} no responde. Revisa los logs: docker compose logs api"
+
+      # ─── Disponibilidad: Uptime bajo ───────────────────────────────────────
+      - alert: UptimeBajo
+        expr: avg_over_time(up{job="predictiva-api"}[24h]) < 0.995
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "Uptime < 99.5% en las últimas 24h"
+          description: "Uptime actual: {{ $value | humanizePercentage }}. KPI objetivo: ≥ 99.5%"
+
+      # ─── Latencia: p99 > 5 segundos (KPI: < 5s) ────────────────────────────
+      - alert: LatenciaForecastAlta
+        expr: histogram_quantile(0.99, sum(rate(predictiva_request_latency_seconds_bucket{endpoint="/api/v1/forecast"}[5m])) by (le)) > 5
+        for: 2m
+        labels:
+          severity: warning
+          component: api
+          kpi: latency
+        annotations:
+          summary: "Latencia p99 de /forecast > 5s"
+          description: "p99 = {{ $value | humanize }}s. KPI objetivo: < 5s durante 2+ minutos"
+
+      # ─── Error Rate: > 1% (KPI: < 1%) ──────────────────────────────────────
+      - alert: TasaErrorAlta
+        expr: |
+          sum(rate(predictiva_requests_total{status_code=~"5.."}[5m]))
+          / sum(rate(predictiva_requests_total[5m])) > 0.01
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+          kpi: error_rate
+        annotations:
+          summary: "Error Rate > 1%"
+          description: "Tasa de errores: {{ $value | humanizePercentage }}. KPI objetivo: < 1%"
+
+      # ─── Recursos: CPU alto ────────────────────────────────────────────────
+      - alert: CPUHostAlta
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: host
+        annotations:
+          summary: "CPU del host > 80%"
+          description: "CPU actual: {{ $value | humanize }}%. Revisa procesos: docker stats"
+
+      # ─── Recursos: Memoria alto ────────────────────────────────────────────
+      - alert: MemoriaHostAlta
+        expr: |
+          (node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"})
+          / node_memory_MemTotal_bytes{job="node-exporter"} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: host
+        annotations:
+          summary: "Memoria del host > 85%"
+          description: "Memoria usada: {{ $value | humanize }}%. Revisa: docker compose ps"
+
+      # ─── Scraping: Prometheus no puede scrapear targets ────────────────────
+      - alert: PrometheusScrapeFallo
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: prometheus
+        annotations:
+          summary: "Prometheus no puede scrapear {{ $labels.instance }}"
+          description: "Job {{ $labels.job }} no responde. Revisa: http://localhost:9090/targets"
