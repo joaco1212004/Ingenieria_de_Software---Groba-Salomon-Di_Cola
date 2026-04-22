@@ -61,6 +61,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd Ingenieria_de_Software---Groba-Salomon-Di_Cola
+            git config pull.ff only 
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            docker-compose down
+            docker-compose up -d --build
