@@ -210,3 +210,4 @@ __marimo__/
 *.ipynb
 .idea
 .vscode/settings.json
+docs/catedra/tutorial.md
