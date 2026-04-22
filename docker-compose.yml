@@ -1,26 +1,44 @@
 services:
+  # ─── Aplicación: FastAPI Mock Forecast API ──────────────────────────────────
   api:
     build: .
     container_name: predictiva-api
     ports:
       - "8000:8000"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
+  # ─── Monitoreo: Prometheus TSDB ───────────────────────────────────────────
   prometheus:
     image: prom/prometheus:v2.54.1
     container_name: predictiva-prometheus
     volumes:
       - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
     ports:
       - "9090:9090"
     depends_on:
       - api
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
+  # ─── Visualización: Grafana Dashboards + Alerting ─────────────────────────
   grafana:
     image: grafana/grafana:11.2.0
     container_name: predictiva-grafana
@@ -34,8 +52,9 @@ services:
       GF_SECURITY_ADMIN_USER: ${GF_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
-      # SMTP para alertas por email (ADR 0003).
-      # Las credenciales se inyectan desde secrets de GitHub Actions al deploy.
+      # Alertas: Feature toggles para Grafana Alerting (ADR 0003)
+      GF_FEATURE_TOGGLES_ENABLE: alertingSimplifiedRouting
+      # SMTP para notificaciones por email (credenciales desde secrets en CI/CD)
       GF_SMTP_ENABLED: ${GF_SMTP_ENABLED:-false}
       GF_SMTP_HOST: ${GF_SMTP_HOST:-smtp.gmail.com:587}
       GF_SMTP_USER: ${GF_SMTP_USER:-}
@@ -44,6 +63,28 @@ services:
       GF_SMTP_FROM_NAME: Predictiva Alerts
     depends_on:
       - prometheus
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # ─── Métricas del Host: node-exporter (CPU, Memoria, Disco) ────────────────
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: predictiva-node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
     restart: unless-stopped
 
 volumes:

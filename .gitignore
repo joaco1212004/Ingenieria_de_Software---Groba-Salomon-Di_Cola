@@ -211,3 +211,4 @@ __marimo__/
 .idea
 .vscode/settings.json
 docs/catedra/tutorial.md
+infra/grafana/dashboards/monitoreo.json
