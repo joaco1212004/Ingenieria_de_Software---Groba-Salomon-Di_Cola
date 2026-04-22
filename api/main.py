@@ -24,5 +24,5 @@ api.add_api_route(
     summary="Prometheus Metrics",
     description="Devuelve métricas de Prometheus en formato text/plain",
     responses={200: {"description": "Métricas en formato Prometheus"}},
-    tags=["monitoring"]
+    tags=["monitoring"],
 )
