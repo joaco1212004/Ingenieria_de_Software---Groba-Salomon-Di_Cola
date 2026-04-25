@@ -209,6 +209,7 @@ __marimo__/
 *.csv
 *.ipynb
 .idea
-.vscode/settings.json
 docs/catedra/tutorial.md
+.vscode/settings.json
+
 infra/grafana/dashboards/monitoreo.json
