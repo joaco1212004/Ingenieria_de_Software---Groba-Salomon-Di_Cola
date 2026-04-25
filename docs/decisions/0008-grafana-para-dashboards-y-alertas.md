@@ -54,7 +54,7 @@ visualización y de gestión de alertas.
   el flujo de edición habitual es por GUI).
 - **Alertas integradas:** Grafana 9+ trae el motor de alertas unificado
   (Grafana Alerting). Definimos reglas como código en el mismo repo
-  (`provisioning/alerting/*.yaml`) y notificamos a email o Slack vía
+  (`provisioning/alerting/*.yaml`) y permite **EN FUTURO DESARROLLO** notificar las alertas por email y/o Slack vía
   contact points. Cubre el requisito de la agenda sin sumar herramientas
   adicionales (Alertmanager queda como opción futura si necesitamos
   enrutamiento más sofisticado).
