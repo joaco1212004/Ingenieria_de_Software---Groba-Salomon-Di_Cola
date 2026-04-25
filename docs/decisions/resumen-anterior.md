@@ -1,13 +1,5 @@
 # DEPRECATED
-**status: Aceptado**  
- **  
- date: 2026-04-08**  
- **  
- decision-makers: Groba, Salomon, Di Cola**  
- **  
- consulted:**  
- **  
- informed: Equipo Docente (Ingeniería de Software)**  
+
 **Selección de Stack Tecnológico e Infraestructura para la API Mock (Fase 1)**  
 **Contexto y Declaración del Problema**  
 Para cumplir con la Fase 1 del proyecto "Plataforma Predictiva", debíamos desarrollar y desplegar una API RESTful (mock) que sirviera datos estáticos o simulados. Los requisitos de la adenda técnica incluían exposición de endpoints documentados (OpenAPI), validación de parámetros, empaquetado en contenedores Docker, un flujo automatizado de CI/CD, y despliegue utilizando los créditos de AWS otorgados por la cátedra. Teníamos que elegir las herramientas y lenguajes que nos permitieran hacer esto de la forma más rápida y robusta posible.  
