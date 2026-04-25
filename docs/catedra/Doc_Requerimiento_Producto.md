@@ -40,7 +40,7 @@ El producto busca mejorar la previsibilidad del volumen producido y reducir la i
 
 **Notas:**
 * En este documento se utilizará la convención del [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
-* En adición a lo presentado en este documento se emitirán adendas técnicas que especificarán en mayor detalle los requerimientos que **DEBE** cumplir cada fase de entrega.
+* En adición a lo presentado en este documento se emitirán agendas técnicas que especificarán en mayor detalle los requerimientos que **DEBE** cumplir cada fase de entrega.
 
 ---
 
@@ -170,15 +170,15 @@ A continuación se detallan los usuarios principales de la Plataforma de Predict
 * **Fase 1:**
     * Objetivo: Desarrollar sistema que ofrezca una interfaz de demo del servicio a prestar.
     * Fecha estimada: 2026-04-28
-    * Entregables: Referir a la adenda técnica de la fase 1 para más detalle.
+    * Entregables: Referir a la agenda técnica de la fase 1 para más detalle.
 * **Fase 2:**
     * Objetivo: Implementar funcionalidad para ingesta, manejo y procesamiento de datos.
     * Fecha estimada: 2026-06-09
-    * Entregables: Referir a la adenda técnica de la fase 2 para más detalle.
+    * Entregables: Referir a la agenda técnica de la fase 2 para más detalle.
 * **Fase 3:**
     * Objetivo: Implementar modelo predictivo integrado dentro del sistema.
     * Fecha estimada: 2026-06-30
-    * Entregables: Referir a la adenda técnica de la fase 3 para más detalle.
+    * Entregables: Referir a la agenda técnica de la fase 3 para más detalle.
 
 ---
 

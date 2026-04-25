@@ -213,3 +213,9 @@ docs/catedra/tutorial.md
 .vscode/settings.json
 
 infra/grafana/dashboards/monitoreo.json
+docs/decisions/docker-compose-deploy.md
+docs/decisions/docker-compose.md
+docs/decisions/resumen-anterior.md
+docs/decisions/metricas.md
+docs/decisions/herramienta-de-metricas.md
+docs/decisions/estrategia-de-alertas.md
