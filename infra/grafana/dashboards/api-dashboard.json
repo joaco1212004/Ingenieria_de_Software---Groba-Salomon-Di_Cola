@@ -142,7 +142,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "Prometheus_FAST_API_data" },
-          "expr": "sum(rate(predictiva_request_errors_total[5m])) / clamp_min(sum(rate(predictiva_requests_total[5m])), 1) * 100",
+          "expr": "sum(rate(predictiva_requests_total{status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(predictiva_requests_total[5m])), 1) * 100",
           "legendFormat": "Error rate %",
           "refId": "A"
         }
@@ -381,7 +381,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "Prometheus_FAST_API_data" },
-          "expr": "sum(rate(predictiva_request_errors_total[5m])) / clamp_min(sum(rate(predictiva_requests_total[5m])), 1)",
+          "expr": "sum(rate(predictiva_requests_total{status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(predictiva_requests_total[5m])), 1)",
           "legendFormat": "error ratio",
           "refId": "A"
         }
