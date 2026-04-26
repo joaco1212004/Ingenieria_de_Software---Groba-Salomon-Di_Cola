@@ -117,7 +117,6 @@ class PrometheusMiddleware:
             return
 
         method = scope["method"]
-        endpoint = _resolve_endpoint(scope)
         start = time.perf_counter()
         status_holder = {"code": 500}
 
@@ -129,6 +128,10 @@ class PrometheusMiddleware:
         try:
             await self.app(scope, receive, send_wrapper)
         finally:
+            # scope["route"] lo setea el router durante el dispatch, así que
+            # resolvemos el endpoint recién acá (post-app) para no terminar
+            # contabilizando todo bajo "<unmatched>".
+            endpoint = _resolve_endpoint(scope)
             if endpoint == "/metrics":
                 return
             elapsed = time.perf_counter() - start
