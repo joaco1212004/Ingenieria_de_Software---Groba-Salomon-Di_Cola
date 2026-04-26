@@ -12,6 +12,7 @@ env:
 
 jobs:
   test:
+    name: Tests unitarios + Black análisis
     runs-on: ubuntu-latest
 
     steps:
@@ -36,6 +37,7 @@ jobs:
         run: poetry run pytest --cov=api --cov-report=term-missing
 
   build-docker:
+    name: Docker Build + escaneo Trivy
     runs-on: ubuntu-latest
     needs: test
 
@@ -55,7 +57,7 @@ jobs:
           exit-code: "0"
 
   integration-test:
-    name: Integration test (docker compose)
+    name: ITests de integración
     runs-on: ubuntu-latest
     needs: build-docker
 
