@@ -2,7 +2,7 @@
 
 ## Contexto y Declaración del Problema
 
-La agenda técnica exige un *dashboard de monitoreo* que muestre métricas de
+La adenda técnica exige un *dashboard de monitoreo* que muestre métricas de
 aplicación (latencia, disponibilidad, frecuencia de consulta) y de
 infraestructura (CPU, memoria, disco), con **alertas automáticas** ante
 fallas de servicio, incumplimiento de latencia o alta tasa de error.
@@ -55,7 +55,7 @@ visualización y de gestión de alertas.
 - **Alertas integradas:** Grafana 9+ trae el motor de alertas unificado
   (Grafana Alerting). Definimos reglas como código en el mismo repo
   (`provisioning/alerting/*.yaml`) y permite **EN FUTURO DESARROLLO** notificar las alertas por email y/o Slack vía
-  contact points. Cubre el requisito de la agenda sin sumar herramientas
+  contact points. Cubre el requisito de la adenda sin sumar herramientas
   adicionales (Alertmanager queda como opción futura si necesitamos
   enrutamiento más sofisticado).
 - **Costo cero en créditos AWS:** el contenedor corre en la misma t2.micro

@@ -2,7 +2,7 @@
 
 ## Contexto y Declaración del Problema
 
-La agenda técnica exige monitorear el **uso de recursos** del Motor de
+La adenda técnica exige monitorear el **uso de recursos** del Motor de
 Modelado y del Servidor API: CPU, memoria, I/O de disco. Estas métricas son
 a nivel **host**, no aplicación: las emite el sistema operativo, no el
 proceso de FastAPI.
@@ -61,7 +61,7 @@ hacia CloudWatch.
 - **Cobertura adecuada:** Node Exporter expone CPU (por core), memoria
   (free, used, cached, swap), disco (I/O, espacio), red (bytes
   in/out/error), load average y filesystem. Cubre exactamente la lista de
-  la agenda. cAdvisor sería complementario (métricas por contenedor) pero
+  la adenda. cAdvisor sería complementario (métricas por contenedor) pero
   agrega un servicio más sobre la t2.micro sin valor inmediato para la
   demo; lo dejamos para una fase futura si hace falta debugear consumo
   por servicio.

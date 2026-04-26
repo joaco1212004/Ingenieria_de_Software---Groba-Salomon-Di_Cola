@@ -13,7 +13,7 @@ Con el objetivo de replicar la experiencia de un entorno laboral real, el trabaj
 
 ## Desarrollo
 
-La descripción del desarrollo se definirá mediante un [Documento de Requerimientos de Producto (PRD)](Doc_Requerimiento_Producto.md), que incluirá una visión de alto nivel del proyecto y un conjunto de agendas técnicas que se incorporarán progresivamente a lo largo de la cursada.
+La descripción del desarrollo se definirá mediante un [Documento de Requerimientos de Producto (PRD)](Doc_Requerimiento_Producto.md), que incluirá una visión de alto nivel del proyecto y un conjunto de adendas técnicas que se incorporarán progresivamente a lo largo de la cursada.
 
 Las fechas relevantes van a ser comunicadas por los canales habituales en lo posible siguiendo el cronograma de clases preestablecido.
 
@@ -38,7 +38,7 @@ Cada entrega estará compuesta por los siguientes ítems:
 
 Con el fin de evaluar cada entrega, se considerarán los siguientes aspectos:
 
-* Cumplimiento de los requisitos definidos en cada agenda técnica en tiempo y forma.
+* Cumplimiento de los requisitos definidos en cada adenda técnica en tiempo y forma.
 * Capacidad del equipo para responder preguntas sobre el diseño y funcionamiento del sistema incluyendo: supuestos y limitaciones considerados, trade-offs de las alternativas analizadas y la justificación técnica de las soluciones desarrolladas.
 
 ## Aclaraciones

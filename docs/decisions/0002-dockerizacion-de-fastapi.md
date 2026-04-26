@@ -2,7 +2,7 @@
 
 ## Contexto y Declaración del Problema
 
-La agenda técnica de la Fase 1 establece que **todos los componentes de la
+La adenda técnica de la Fase 1 establece que **todos los componentes de la
 Plataforma Predictiva DEBEN ser contenerizados utilizando Docker** para
 asegurar portabilidad, consistencia y reproducibilidad entre ambientes. La API
 mock está implementada en FastAPI (ver
@@ -18,7 +18,7 @@ como una función serverless sobre AWS Lambda con un adaptador ASGI
 
 ## Factores de Decisión
 
-- Cumplimiento estricto del requisito **DEBE** de la agenda (contenerización
+- Cumplimiento estricto del requisito **DEBE** de la adenda (contenerización
   obligatoria).
 - Paridad entre el entorno de desarrollo, el de CI y el de producción.
 - Simplicidad operativa para un equipo de tres personas en una asignatura
@@ -42,7 +42,7 @@ como una función serverless sobre AWS Lambda con un adaptador ASGI
 **Por qué:**
 
 - Es la única que satisface el requisito **DEBE** de contenerización de la
-  agenda. Las opciones B y C lo incumplen o requieren acrobacias (B no usa
+  adenda. Las opciones B y C lo incumplen o requieren acrobacias (B no usa
   contenedor; C usa un paquete .zip o una imagen Lambda con un runtime
   distinto al runtime de la app local).
 - Garantiza paridad entre entornos: la misma imagen que pasa el job
@@ -60,7 +60,7 @@ como una función serverless sobre AWS Lambda con un adaptador ASGI
 
 ### Consecuencias
 
-- **Bueno, porque:** cumple el requisito explícito de la agenda;
+- **Bueno, porque:** cumple el requisito explícito de la adenda;
   el desarrollo y la CI usan exactamente el mismo artefacto que producción;
   abre la puerta a sumar más servicios contenerizados (Prometheus, Grafana)
   sin reescribir la base.
@@ -72,7 +72,7 @@ como una función serverless sobre AWS Lambda con un adaptador ASGI
   pay-per-invocation porque el cold-start de un runtime Python con
   dependencias pesadas (FastAPI + Pydantic + posibles librerías de ML
   futuras) puede empujarnos por encima del KPI de latencia < 5s definido en
-  la agenda.
+  la adenda.
 
 ### Confirmación
 

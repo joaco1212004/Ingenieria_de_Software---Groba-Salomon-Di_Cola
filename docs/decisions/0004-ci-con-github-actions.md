@@ -2,7 +2,7 @@
 
 ## Contexto y Declaración del Problema
 
-La agenda técnica de la Fase 1 establece que el sistema **DEBE** implementar
+La adenda técnica de la Fase 1 establece que el sistema **DEBE** implementar
 un pipeline de Integración Continua que (a) ejecute pruebas unitarias y de
 integración tras cada commit o pull request, (b) realice análisis estático
 de código, y (c) genere artefactos inmutables (imágenes Docker) listos para

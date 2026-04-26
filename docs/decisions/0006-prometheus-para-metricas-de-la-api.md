@@ -2,7 +2,7 @@
 
 ## Contexto y Declaración del Problema
 
-La agenda técnica exige un dashboard técnico de monitoreo que cubra, entre
+La adenda técnica exige un dashboard técnico de monitoreo que cubra, entre
 otras, **latencia de pronóstico (KPI < 5s)**, **disponibilidad de la API
 (KPI 99.5% uptime)** y **frecuencia de consulta de la API REST por
 sistemas externos**. Estas tres métricas son a nivel **aplicación**: viven

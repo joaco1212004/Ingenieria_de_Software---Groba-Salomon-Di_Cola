@@ -50,7 +50,7 @@ que la instancia quede en un estado inconsistente si cualquier comando falla.
   `docker-compose.yml` es trivial.
 - ECS/Fargate y EKS son orquestadores diseñados para flotas multi-host con
   necesidades de auto-scaling, alta disponibilidad y service discovery
-  distribuido. **Ninguno de esos requisitos aplica en Fase 1**: la agenda
+  distribuido. **Ninguno de esos requisitos aplica en Fase 1**: la adenda
   exige un mock sobre una única instancia. Adoptarlos sería sobre-ingeniería
   con costo de aprendizaje y de créditos AWS (Fargate cobra por vCPU/hora
   asignada incluso al ralentí; EKS cobra USD 0,10/hora por cluster).

@@ -2,7 +2,7 @@
 
 ## Contexto y Declaración del Problema
 
-La agenda técnica exige Despliegue Continuo a los ambientes destino con
+La adenda técnica exige Despliegue Continuo a los ambientes destino con
 verificación automática de salud post-despliegue. En el
 [ADR-0004](0004-ci-con-github-actions.md) decidimos usar GitHub Actions
 como motor de CI; queda definir cómo se ejecuta el paso de **deploy** que
