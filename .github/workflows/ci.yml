@@ -33,7 +33,7 @@ jobs:
         run: poetry run black --check .
 
       - name: Correr tests
-        run: poetry run pytest
+        run: poetry run pytest --cov=api --cov-report=term-missing
 
   build-docker:
     runs-on: ubuntu-latest
@@ -45,6 +45,14 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t predictiva-api:${{ github.sha }} .
+
+      - name: Escaneo de vulnerabilidades de la imagen
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: predictiva-api:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
 
   deploy:
     name: Deploy to EC2
@@ -61,7 +69,12 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd Ingenieria_de_Software---Groba-Salomon-Di_Cola
-            git config pull.ff only 
+            git config pull.ff only
             git pull origin main
             docker-compose down
             docker-compose up -d --build
+            sleep 15
+            curl -fsSL http://localhost:8000/metrics > /dev/null
+            curl -fsSL -H "X-API-Key: abcdef12345" \
+              "http://localhost:8000/api/v1/wells?date_query=$(date +%F)" > /dev/null
+            echo "Salud post-deploy verificada"

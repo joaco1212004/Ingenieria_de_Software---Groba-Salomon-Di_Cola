@@ -25,16 +25,14 @@ contactPoints:
           text: "{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
 
   # Contact point para SMTP (email)
-  # ⚠️  Requiere credenciales en docker-compose.yml (GF_SMTP_* env vars)
-  # Descomentar cuando esté configurado SMTP en producción
-  # - orgId: 1
-  #   name: email-ops
-  #   receivers:
-  #     - uid: email-ops-receiver
-  #       type: email
-  #       settings:
-  #         addresses: ops@example.com
-          # Headers: From, Subject (opcionales)
+  # Requiere credenciales SMTP en el .env de la instancia (GF_SMTP_* env vars)
+  - orgId: 1
+    name: email-ops
+    receivers:
+      - uid: email-ops-receiver
+        type: email
+        settings:
+          addresses: tipazos.predictiva@gmail.com
 
   # Contact point para Slack (ejercicio en clase)
   # Descomentar y reemplazar SLACK_WEBHOOK_URL cuando esté disponible.
