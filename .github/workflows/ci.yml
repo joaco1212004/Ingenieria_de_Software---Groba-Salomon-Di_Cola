@@ -12,6 +12,7 @@ env:
 
 jobs:
   test:
+    name: Tests unitarios + Black análisis
     runs-on: ubuntu-latest
 
     steps:
@@ -36,6 +37,7 @@ jobs:
         run: poetry run pytest --cov=api --cov-report=term-missing
 
   build-docker:
+    name: Docker Build + escaneo Trivy
     runs-on: ubuntu-latest
     needs: test
 
@@ -54,10 +56,33 @@ jobs:
           ignore-unfixed: true
           exit-code: "0"
 
+  integration-test:
+    name: Tests de integración
+    runs-on: ubuntu-latest
+    needs: build-docker
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Levantar el stack
+        run: docker compose up -d --build
+
+      - name: Correr integration test
+        run: ./scripts/integration-test.sh
+
+      - name: Logs en caso de fallo
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Bajar el stack
+        if: always()
+        run: docker compose down -v
+
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
-    needs: build-docker
+    needs: integration-test
     if: github.ref == 'refs/heads/main'
 
     steps:

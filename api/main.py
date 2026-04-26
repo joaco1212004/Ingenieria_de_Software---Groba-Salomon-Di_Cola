@@ -1,6 +1,6 @@
 """Modulo principal de la aplicacion FastAPI."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from api.forecast.routes import router as forecast_router
 from api.metrics import PrometheusMiddleware, metrics_endpoint
@@ -26,3 +26,20 @@ api.add_api_route(
     responses={200: {"description": "Métricas en formato Prometheus"}},
     tags=["monitoring"],
 )
+
+
+@api.get(
+    "/api/v1/_debug/error",
+    tags=["debug"],
+    summary="Disparar HTTP 500 para validar dashboard y alertas",
+    responses={500: {"description": "Error simulado"}},
+)
+def trigger_error():
+    """Endpoint de debug que dispara un HTTP 500 deliberadamente.
+
+    Sirve para validar que el panel "Error Rate" del dashboard
+    detecta errores del servidor y que la regla de alerta
+    TasaErrorAlta se dispara correctamente. No tiene utilidad
+    funcional en producción.
+    """
+    raise HTTPException(status_code=500, detail="Error simulado")
