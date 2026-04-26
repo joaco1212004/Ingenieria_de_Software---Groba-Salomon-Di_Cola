@@ -75,15 +75,13 @@ jobs:
             docker-compose down
             docker-compose up -d --build
             sleep 15
-            if ! curl -fsSL http://localhost:8000/metrics > /dev/null \
-               || ! curl -fsSL -H "X-API-Key: abcdef12345" \
-                    "http://localhost:8000/api/v1/wells?date_query=$(date +%F)" > /dev/null; then
+            if ! ./scripts/smoke.sh; then
               echo "Smoke test falló, rollback a $PREV_SHA"
               git reset --hard "$PREV_SHA"
               docker-compose down
               docker-compose up -d --build
               sleep 15
-              curl -fsSL http://localhost:8000/metrics > /dev/null
+              ./scripts/smoke.sh || true
               exit 1
             fi
             echo "Salud post-deploy verificada"

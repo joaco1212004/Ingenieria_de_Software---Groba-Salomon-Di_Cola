@@ -70,9 +70,12 @@ instancia y describir el despliegue como una aplicación AWS administrada.
 
 - **Bueno, porque:** el workflow es un único archivo, leíble de punta a
   punta; no consume créditos AWS adicionales fuera de la EC2; el rollback
-  es automático: si los smoke tests post-deploy fallan, el job hace
+  es automático: si el smoke test post-deploy
+  ([`scripts/smoke.sh`](../../scripts/smoke.sh)) falla, el job hace
   `git reset --hard` al SHA anterior y reconstruye, dejando el servicio
-  en la última versión sana antes de reportar el job como fallido.
+  en la última versión sana antes de reportar el job como fallido. El
+  smoke test vive en un script propio para que pueda invocarse también
+  en local antes de pushear cambios sensibles.
 - **Malo, porque:** la llave SSH vive como secret en GitHub. Su rotación
   exige actualizar el secret manualmente. Lo aceptamos porque es la única
   credencial sensible del flujo.
