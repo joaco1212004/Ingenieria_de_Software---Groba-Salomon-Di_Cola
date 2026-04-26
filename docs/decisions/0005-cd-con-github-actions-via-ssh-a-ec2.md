@@ -70,7 +70,12 @@ instancia y describir el despliegue como una aplicación AWS administrada.
 
 - **Bueno, porque:** el workflow es un único archivo, leíble de punta a
   punta; no consume créditos AWS adicionales fuera de la EC2; el rollback
-  es un `git revert` + push (el deploy se reactiva solo).
+  es automático: si el smoke test post-deploy
+  ([`scripts/smoke.sh`](../../scripts/smoke.sh)) falla, el job hace
+  `git reset --hard` al SHA anterior y reconstruye, dejando el servicio
+  en la última versión sana antes de reportar el job como fallido. El
+  smoke test vive en un script propio para que pueda invocarse también
+  en local antes de pushear cambios sensibles.
 - **Malo, porque:** la llave SSH vive como secret en GitHub. Su rotación
   exige actualizar el secret manualmente. Lo aceptamos porque es la única
   credencial sensible del flujo.
@@ -82,10 +87,20 @@ instancia y describir el despliegue como una aplicación AWS administrada.
 - **No tiene rolling/canary:** el deploy es un reinicio del compose. Lo
   hacemos consciente y queda registrado para revisar si los KPIs de
   disponibilidad lo exigen.
+- **Malo, porque:** el rollback automático duplica el tiempo de deploy
+  en el peor caso (dos `docker-compose up --build` consecutivos en una
+  t2.micro). Aceptable porque el caso normal es un solo build y el peor
+  caso es ya degradado: el servicio se rompió, urge volver al último
+  estado sano. Si en una fase futura el doble build es prohibitivo,
+  tagear la imagen previa y hacer rollback por imagen es la evolución
+  natural.
 
 ### Confirmación
 
 Se verifica con la ejecución exitosa del job `deploy` en
 [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) tras cada
 merge a `main`, y con el contenedor de la API respondiendo en el dominio
-`api-hidraulicos-tipazos.duckdns.org` luego del despliegue.
+`api-hidraulicos-tipazos.duckdns.org` luego del despliegue. El rollback
+automático se valida disparando un deploy con un commit que rompa el
+smoke test y verificando que la EC2 vuelve al SHA previo, con el job
+del CI marcado en rojo.
