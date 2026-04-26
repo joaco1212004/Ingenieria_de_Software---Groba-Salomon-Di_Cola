@@ -18,7 +18,7 @@ El servicio se compone de cuatro contenedores que se levantan en simultáneo con
 |----------|--------|--------|-----|
 | `api` | build local (`Dockerfile`) | 8000 | API mock + endpoint `/metrics` para Prometheus |
 | `prometheus` | `prom/prometheus:v2.54.1` | 9090 | TSDB que scrapea la API y el host (retención 15 días) |
-| `grafana` | `grafana/grafana:11.2.0` | 3000 | Dashboards y alertas sobre los KPIs de la adenda |
+| `grafana` | `grafana/grafana:11.2.0` | 3000 | Dashboards y alertas sobre los KPIs de la agenda |
 | `node-exporter` | `prom/node-exporter:v1.7.0` | 9100 | Métricas de CPU, memoria y disco del host |
 
 ## Acceso
@@ -86,4 +86,4 @@ El pipeline de CI (GitHub Actions) corre estos tests, un check de formato con Bl
 
 Los registros de decisiones arquitectónicas (ADR) están en [`docs/decisions/`](docs/decisions/). Documentamos ahí las opciones consideradas y los trade-offs detrás del stack tecnológico, la estrategia de contenedores, el monitoreo y las alertas.
 
-La consigna y las adendas técnicas de la cátedra están en [`docs/catedra/`](docs/catedra/).
+La consigna y las agendas técnicas de la cátedra están en [`docs/catedra/`](docs/catedra/).
