@@ -1,6 +1,6 @@
-# Adenda Técnica Fase 1: Demo del Servicio
+# Agenda Técnica Fase 1: Demo del Servicio
 
-* [Adenda Técnica Fase 1: Demo del Servicio](#adenda-técnica-fase-1-demo-del-servicio)
+* [Agenda Técnica Fase 1: Demo del Servicio](#agenda-técnica-fase-1-demo-del-servicio)
 * [Contexto](#contexto)
 * [Arquitectura](#arquitectura)
 * [Integración Continua y Despliegue Continuo (CI/CD)](#integración-continua-y-despliegue-continuo-cicd)
