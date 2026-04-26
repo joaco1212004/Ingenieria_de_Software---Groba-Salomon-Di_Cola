@@ -15,6 +15,7 @@
 set -euo pipefail
 
 HOST="${1:-http://localhost:8000}"
+HOST="${HOST%/}"  # quitar trailing slash si lo hay
 API_KEY="${2:-abcdef12345}"
 
 echo "Smoke test contra ${HOST}"
