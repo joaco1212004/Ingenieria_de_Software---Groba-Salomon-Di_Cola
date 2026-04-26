@@ -54,8 +54,9 @@ visualización y de gestión de alertas.
   el flujo de edición habitual es por GUI).
 - **Alertas integradas:** Grafana 9+ trae el motor de alertas unificado
   (Grafana Alerting). Definimos reglas como código en el mismo repo
-  (`provisioning/alerting/*.yaml`) y permite **EN FUTURO DESARROLLO** notificar las alertas por email y/o Slack vía
-  contact points. Cubre el requisito de la adenda sin sumar herramientas
+  (`provisioning/alerting/*.yaml`) y notificamos por email vía contact
+  points configurados con SMTP de Gmail (App Password en `.env` de la
+  instancia). Cubre el requisito de la adenda sin sumar herramientas
   adicionales (Alertmanager queda como opción futura si necesitamos
   enrutamiento más sofisticado).
 - **Costo cero en créditos AWS:** el contenedor corre en la misma t2.micro

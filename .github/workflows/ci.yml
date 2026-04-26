@@ -70,11 +70,20 @@ jobs:
           script: |
             cd Ingenieria_de_Software---Groba-Salomon-Di_Cola
             git config pull.ff only
+            PREV_SHA=$(git rev-parse HEAD)
             git pull origin main
             docker-compose down
             docker-compose up -d --build
             sleep 15
-            curl -fsSL http://localhost:8000/metrics > /dev/null
-            curl -fsSL -H "X-API-Key: abcdef12345" \
-              "http://localhost:8000/api/v1/wells?date_query=$(date +%F)" > /dev/null
+            if ! curl -fsSL http://localhost:8000/metrics > /dev/null \
+               || ! curl -fsSL -H "X-API-Key: abcdef12345" \
+                    "http://localhost:8000/api/v1/wells?date_query=$(date +%F)" > /dev/null; then
+              echo "Smoke test falló, rollback a $PREV_SHA"
+              git reset --hard "$PREV_SHA"
+              docker-compose down
+              docker-compose up -d --build
+              sleep 15
+              curl -fsSL http://localhost:8000/metrics > /dev/null
+              exit 1
+            fi
             echo "Salud post-deploy verificada"
