@@ -47,7 +47,7 @@ jobs:
         run: docker build -t predictiva-api:${{ github.sha }} .
 
       - name: Escaneo de vulnerabilidades de la imagen
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: predictiva-api:${{ github.sha }}
           severity: CRITICAL,HIGH
