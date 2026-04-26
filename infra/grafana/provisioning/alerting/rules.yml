@@ -18,7 +18,7 @@ groups:
             relativeTimeRange:
               from: 60
               to: 0
-            datasourceUid: Prometheus_FAST_API_data
+            datasourceUid: P1B8CF91FBBEBA6A8
             model:
               expr: 'up{job="predictiva-api"}'
               instant: true
