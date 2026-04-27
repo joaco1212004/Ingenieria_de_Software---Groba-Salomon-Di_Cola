@@ -1,10 +1,11 @@
 from fastapi.testclient import TestClient
 
 from api.main import api
+from api.security import API_KEY
 
 client = TestClient(api)
 
-API_KEY_HEADER = {"X-API-Key": "abcdef12345"}
+API_KEY_HEADER = {"X-API-Key": API_KEY}
 
 
 def _metrics_text() -> str:

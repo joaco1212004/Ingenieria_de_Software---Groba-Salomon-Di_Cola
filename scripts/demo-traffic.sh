@@ -11,16 +11,18 @@
 # Es solo decoracion para la demo.
 #
 # Uso:
-#   scripts/demo-traffic.sh                                   # local, 200 iter
-#   scripts/demo-traffic.sh http://api-hidraulicos-tipazos.duckdns.org:8000
-#   scripts/demo-traffic.sh http://localhost:8000 500         # 500 iter
+#   API_KEY=xxx scripts/demo-traffic.sh                                   # local, 200 iter
+#   API_KEY=xxx scripts/demo-traffic.sh http://api-hidraulicos-tipazos.duckdns.org:8000
+#   API_KEY=xxx scripts/demo-traffic.sh http://localhost:8000 500         # 500 iter
+#
+# La API_KEY DEBE pasarse como variable de entorno (sin default).
 
 set -uo pipefail
 
 HOST="${1:-http://localhost:8000}"
 HOST="${HOST%/}"  # quitar trailing slash si lo hay, evita //api/v1/...
 ITERATIONS="${2:-200}"
-API_KEY="abcdef12345"
+: "${API_KEY:?API_KEY no seteada. Usá: API_KEY=xxx scripts/demo-traffic.sh [host] [iter]}"
 
 POZOS=("POZO-001" "POZO-002" "POZO-003" "WELL-001" "WELL-002")
 

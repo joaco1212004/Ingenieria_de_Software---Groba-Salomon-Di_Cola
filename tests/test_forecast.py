@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
 from api.main import api
+from api.security import API_KEY
 
 client = TestClient(api)
+AUTH_HEADERS = {"X-API-Key": API_KEY}
 
 
 def test_get_forecast_ok():
@@ -12,7 +14,7 @@ def test_get_forecast_ok():
             "date_start": "2026-03-30",
             "date_end": "2026-04-02",
         },
-        headers={"X-API-Key": "abcdef12345"},
+        headers=AUTH_HEADERS,
     )
 
     assert response.status_code == 200
@@ -28,7 +30,7 @@ def test_get_forecast_invalid_dates():
             "date_start": "2026-04-02",
             "date_end": "2026-03-30",
         },
-        headers={"X-API-Key": "abcdef12345"},
+        headers=AUTH_HEADERS,
     )
 
     assert response.status_code == 400
@@ -42,7 +44,7 @@ def test_get_forecast_invalid_format():
             "date_start": "2026/03/30",
             "date_end": "2026-04-02",
         },
-        headers={"X-API-Key": "abcdef12345"},
+        headers=AUTH_HEADERS,
     )
 
     assert response.status_code == 422

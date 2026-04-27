@@ -30,19 +30,19 @@ Servicio público accesible vía DuckDNS en `api-hidraulicos-tipazos.duckdns.org
 - Documentación interactiva (Swagger UI): http://api-hidraulicos-tipazos.duckdns.org:8000/docs
 - Dashboard de monitoreo (Grafana): http://api-hidraulicos-tipazos.duckdns.org:3000 (usuario `admin`, contraseña `admin`)
 
-Ejemplos:
+Ejemplos (asumen que la API key está en la variable de entorno `API_KEY`):
 
 ```bash
 # Listar pozos
-curl -H "X-API-Key: abcdef12345" \
+curl -H "X-API-Key: $API_KEY" \
   "http://api-hidraulicos-tipazos.duckdns.org:8000/api/v1/wells?date_query=2026-04-26"
 
 # Pedir pronóstico
-curl -H "X-API-Key: abcdef12345" \
+curl -H "X-API-Key: $API_KEY" \
   "http://api-hidraulicos-tipazos.duckdns.org:8000/api/v1/forecast?id_well=POZO-001&date_start=2026-04-26&date_end=2026-04-30"
 ```
 
-Sin el header `X-API-Key` los endpoints responden con HTTP 403 Forbidden.
+Sin el header `X-API-Key` los endpoints responden con HTTP 403 Forbidden. La API key vive en la variable de entorno `API_KEY` (la configuramos en el `.env` de la EC2, no commiteado). Para correr localmente usá la key de la adenda Fase 1 o pasá una propia con `API_KEY=xxx docker compose up -d`.
 
 ### Local
 
