@@ -42,7 +42,7 @@ curl -H "X-API-Key: $API_KEY" \
   "http://api-hidraulicos-tipazos.duckdns.org:8000/api/v1/forecast?id_well=POZO-001&date_start=2026-04-26&date_end=2026-04-30"
 ```
 
-Sin el header `X-API-Key` los endpoints responden con HTTP 403 Forbidden. La API key vive en la variable de entorno `API_KEY` (la configuramos en el `.env` de la EC2, no commiteado). Para correr localmente usá la key de la adenda Fase 1 o pasá una propia con `API_KEY=xxx docker compose up -d`.
+Sin el header `X-API-Key` los endpoints responden con HTTP 403 Forbidden. La API key se configura como variable de entorno `API_KEY` (en producción vive en el `.env` de la EC2, no commiteado). Para correr localmente: `API_KEY=<tu-clave> docker compose up -d --build`. Sin esa variable, la app no arranca.
 
 ### Local
 
