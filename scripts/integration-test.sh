@@ -16,7 +16,7 @@ PROM_HOST="${PROM_HOST:-http://localhost:9090}"
 GRAFANA_HOST="${GRAFANA_HOST:-http://localhost:3000}"
 GRAFANA_USER="${GRAFANA_USER:-admin}"
 GRAFANA_PASSWORD="${GRAFANA_PASSWORD:-admin}"
-API_KEY="${API_KEY:-abcdef12345}"
+: "${API_KEY:?API_KEY no seteada. Usá: API_KEY=xxx scripts/integration-test.sh}"
 
 # Espera hasta READY_TIMEOUT a que un endpoint devuelva 2xx.
 wait_for() {

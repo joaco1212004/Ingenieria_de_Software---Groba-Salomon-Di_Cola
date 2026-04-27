@@ -5,6 +5,8 @@ services:
     container_name: predictiva-api
     ports:
       - "8000:8000"
+    environment:
+      API_KEY: ${API_KEY:-abcdef12345}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/metrics"]

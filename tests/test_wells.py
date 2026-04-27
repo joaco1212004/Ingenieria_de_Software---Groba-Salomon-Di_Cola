@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from api.main import api
+from api.security import API_KEY
 
 client = TestClient(api)
 
@@ -8,7 +9,7 @@ def test_get_wells_ok():
     response = client.get(
         "/api/v1/wells",
         params={"date_query": "2026-03-30"},
-        headers={"X-API-Key": "abcdef12345"},
+        headers={"X-API-Key": API_KEY},
     )
 
     assert response.status_code == 200

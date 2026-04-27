@@ -9,6 +9,11 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # API key compartida por los jobs `test` e `integration-test`.
+  # En GitHub: Settings → Secrets and variables → Actions → New repository secret
+  # con name=API_KEY. El fallback usa el valor de la adenda Fase 1 para forks
+  # (donde GitHub no propaga secrets por seguridad) y para PRs externos.
+  API_KEY: ${{ secrets.API_KEY || 'abcdef12345' }}
 
 jobs:
   test:
@@ -100,13 +105,16 @@ jobs:
             docker-compose down
             docker-compose up -d --build
             sleep 15
-            if ! ./scripts/smoke.sh; then
+            # smoke.sh requiere API_KEY como env var: la cargamos desde el .env
+            # del host (no commiteado). Una subshell evita contaminar el shell
+            # principal con el secreto.
+            if ! ( set -a; . ./.env; set +a; ./scripts/smoke.sh ); then
               echo "Smoke test falló, rollback a $PREV_SHA"
               git reset --hard "$PREV_SHA"
               docker-compose down
               docker-compose up -d --build
               sleep 15
-              ./scripts/smoke.sh || true
+              ( set -a; . ./.env; set +a; ./scripts/smoke.sh ) || true
               exit 1
             fi
             echo "Salud post-deploy verificada"
