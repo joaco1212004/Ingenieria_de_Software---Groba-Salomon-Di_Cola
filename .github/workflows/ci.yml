@@ -9,11 +9,10 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # API key compartida por los jobs `test` e `integration-test`.
-  # En GitHub: Settings → Secrets and variables → Actions → New repository secret
-  # con name=API_KEY. El fallback usa el valor de la adenda Fase 1 para forks
-  # (donde GitHub no propaga secrets por seguridad) y para PRs externos.
-  API_KEY: ${{ secrets.API_KEY || 'abcdef12345' }}
+  # API key requerida en jobs `test` e `integration-test`.
+  # Configurable como GitHub Secret 'API_KEY' (Settings → Secrets and variables → Actions).
+  # Sin secret, los jobs fallan a propósito: la API no debe arrancar sin clave.
+  API_KEY: ${{ secrets.API_KEY }}
 
 jobs:
   test:
