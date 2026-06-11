@@ -8,6 +8,9 @@ package-mode = false
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
+[tool.dagster]
+module_name = "pipeline.definitions"
+
 [tool.poetry.dependencies]
 python = ">=3.10,<3.15"
 fastapi = "^0.135.1"
