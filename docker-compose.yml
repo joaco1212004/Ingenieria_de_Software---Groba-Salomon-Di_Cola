@@ -1,33 +1,96 @@
 services:
-  # ─── Aplicación: FastAPI Mock Forecast API ──────────────────────────────────
   api:
     build: .
     container_name: predictiva-api
     ports:
-      - "8000:8000"
+      - 8000:8000
     environment:
-      API_KEY: ${API_KEY:?Set API_KEY in .env or export it before docker compose up}
-      BRONZE_BUCKET: ${BRONZE_BUCKET-datalake-bronze}
-      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL-http://minio:9000}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID-minioadmin}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY-minioadmin}
-      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN-}
-      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION-us-east-1}
+      API_KEY: '${API_KEY:?Set API_KEY in .env or export it before docker compose up}'
+      BRONZE_BUCKET: '${BRONZE_BUCKET-datalake-bronze}'
+      S3_ENDPOINT_URL: '${S3_ENDPOINT_URL-http://minio:9000}'
+      AWS_ACCESS_KEY_ID: '${AWS_ACCESS_KEY_ID-}'
+      AWS_SECRET_ACCESS_KEY: '${AWS_SECRET_ACCESS_KEY-}'
+      AWS_SESSION_TOKEN: '${AWS_SESSION_TOKEN-}'
+      AWS_DEFAULT_REGION: '${AWS_DEFAULT_REGION-us-east-1}'
     restart: unless-stopped
     healthcheck:
       test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:8000/metrics', timeout=5).read()",
-        ]
+        - CMD
+        - python
+        - -c
+        - 'import urllib.request; urllib.request.urlopen(''http://localhost:8000/metrics'', timeout=5).read()'
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
 
-  # ─── Monitoreo: Prometheus TSDB ───────────────────────────────────────────
+  dagster-code-server:
+    build: .
+    container_name: predictiva-dagster-code-server
+    command: dagster api grpc -h 0.0.0.0 -p 4000 -m pipeline.definitions
+    environment:
+      DAGSTER_HOME: /opt/dagster/dagster_home
+      BRONZE_BUCKET: '${BRONZE_BUCKET-datalake-bronze}'
+      S3_ENDPOINT_URL: '${S3_ENDPOINT_URL-http://minio:9000}'
+      AWS_ACCESS_KEY_ID: '${AWS_ACCESS_KEY_ID-}'
+      AWS_SECRET_ACCESS_KEY: '${AWS_SECRET_ACCESS_KEY-}'
+      AWS_SESSION_TOKEN: '${AWS_SESSION_TOKEN-}'
+      AWS_DEFAULT_REGION: '${AWS_DEFAULT_REGION-us-east-1}'
+    volumes:
+      - dagster_home:/opt/dagster/dagster_home
+      - ./infra/dagster/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - 'import socket; s=socket.create_connection((''localhost'', 4000), timeout=5); s.close()'
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  dagster-webserver:
+    build: .
+    container_name: predictiva-dagster-webserver
+    command: dagster-webserver -h 0.0.0.0 -p 3001 -w workspace.yaml
+    ports:
+      - 3001:3001
+    environment:
+      DAGSTER_HOME: /opt/dagster/dagster_home
+    volumes:
+      - dagster_home:/opt/dagster/dagster_home
+      - ./infra/dagster/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
+    depends_on:
+      dagster-code-server:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - 'import urllib.request; urllib.request.urlopen(''http://localhost:3001/'', timeout=5).read()'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  dagster-daemon:
+    build: .
+    container_name: predictiva-dagster-daemon
+    command: dagster-daemon run -w workspace.yaml
+    environment:
+      DAGSTER_HOME: /opt/dagster/dagster_home
+    volumes:
+      - dagster_home:/opt/dagster/dagster_home
+      - ./infra/dagster/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
+    depends_on:
+      dagster-code-server:
+        condition: service_healthy
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:v2.54.1
     container_name: predictiva-prometheus
@@ -41,56 +104,52 @@ services:
       - --storage.tsdb.retention.time=15d
       - --web.enable-lifecycle
     ports:
-      - "9090:9090"
+      - 9090:9090
     depends_on:
       - api
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      test: [CMD, wget, --quiet, --tries=1, --spider, http://localhost:9090/-/healthy]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
 
-  # ─── Visualización: Grafana Dashboards + Alerting ─────────────────────────
   grafana:
     image: grafana/grafana:11.2.0
     container_name: predictiva-grafana
     ports:
-      - "3000:3000"
+      - 3000:3000
     volumes:
       - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana_data:/var/lib/grafana
     environment:
-      GF_SECURITY_ADMIN_USER: ${GF_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD:-admin}
-      GF_USERS_ALLOW_SIGN_UP: "false"
-      # Alertas: Feature toggles para Grafana Alerting (ADR 0003)
+      GF_SECURITY_ADMIN_USER: '${GF_ADMIN_USER:-admin}'
+      GF_SECURITY_ADMIN_PASSWORD: '${GF_ADMIN_PASSWORD:-admin}'
+      GF_USERS_ALLOW_SIGN_UP: 'false'
       GF_FEATURE_TOGGLES_ENABLE: alertingSimplifiedRouting
-      # SMTP para notificaciones por email (credenciales desde secrets en CI/CD)
-      GF_SMTP_ENABLED: ${GF_SMTP_ENABLED:-false}
-      GF_SMTP_HOST: ${GF_SMTP_HOST:-smtp.gmail.com:587}
-      GF_SMTP_USER: ${GF_SMTP_USER:-}
-      GF_SMTP_PASSWORD: ${GF_SMTP_PASSWORD:-}
-      GF_SMTP_FROM_ADDRESS: ${GF_SMTP_FROM_ADDRESS:-alerts@predictiva.local}
+      GF_SMTP_ENABLED: '${GF_SMTP_ENABLED:-false}'
+      GF_SMTP_HOST: '${GF_SMTP_HOST:-smtp.gmail.com:587}'
+      GF_SMTP_USER: '${GF_SMTP_USER:-}'
+      GF_SMTP_PASSWORD: '${GF_SMTP_PASSWORD:-}'
+      GF_SMTP_FROM_ADDRESS: '${GF_SMTP_FROM_ADDRESS:-alerts@predictiva.local}'
       GF_SMTP_FROM_NAME: Predictiva Alerts
     depends_on:
       - prometheus
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: [CMD, wget, --quiet, --tries=1, --spider, http://localhost:3000/api/health]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
 
-  # ─── Métricas del Host: node-exporter (CPU, Memoria, Disco) ────────────────
   node-exporter:
     image: prom/node-exporter:v1.7.0
     container_name: predictiva-node-exporter
     ports:
-      - "9100:9100"
+      - 9100:9100
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -101,30 +160,26 @@ services:
       - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
     restart: unless-stopped
 
-  # ─── Datalake local: MinIO como doble de S3 (ADR-0010) ─────────────────────
-  # Solo para desarrollo local e integration tests del CI; en producción la
-  # capa bronze vive en un bucket S3 real de AWS.
   minio:
     image: minio/minio:RELEASE.2024-09-13T20-26-02Z
     container_name: predictiva-minio
-    command: server /data --console-address ":9001"
+    command: server /data --console-address :9001
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - 9000:9000
+      - 9001:9001
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_ROOT_USER: '${MINIO_ROOT_USER:-minioadmin}'
+      MINIO_ROOT_PASSWORD: '${MINIO_ROOT_PASSWORD:-minioadmin}'
     volumes:
       - minio_data:/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: [CMD, mc, ready, local]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
 
-  # Job one-shot que crea el bucket bronze si no existe y termina.
   minio-init:
     image: minio/mc:RELEASE.2024-09-16T17-43-14Z
     container_name: predictiva-minio-init
@@ -132,17 +187,18 @@ services:
       minio:
         condition: service_healthy
     entrypoint: >
-      /bin/sh -c "
+      /bin/sh -c '
       mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} &&
       mc mb --ignore-existing local/$${BRONZE_BUCKET}
-      "
+      '
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      BRONZE_BUCKET: ${BRONZE_BUCKET:-datalake-bronze}
-    restart: "no"
+      MINIO_ROOT_USER: '${MINIO_ROOT_USER:-minioadmin}'
+      MINIO_ROOT_PASSWORD: '${MINIO_ROOT_PASSWORD:-minioadmin}'
+      BRONZE_BUCKET: '${BRONZE_BUCKET:-datalake-bronze}'
+    restart: 'no'
 
 volumes:
   prometheus_data:
   grafana_data:
   minio_data:
+  dagster_home:
