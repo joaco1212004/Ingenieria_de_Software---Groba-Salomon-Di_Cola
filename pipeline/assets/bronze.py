@@ -29,8 +29,11 @@ LISTADO_POZOS_URL = (
 
 DOWNLOAD_TIMEOUT_SECONDS = 300
 
-# La partición diaria representa la fecha_extraccion del layout bronze.
-fecha_extraccion_partitions = DailyPartitionsDefinition(start_date="2026-06-01")
+# La particion diaria representa la fecha_extraccion del layout bronze. El
+# end_offset permite correr la extraccion del dia en curso.
+fecha_extraccion_partitions = DailyPartitionsDefinition(
+    start_date="2026-06-01", end_offset=1
+)
 
 
 def bronze_key(dataset: str, fecha_extraccion: str, filename: str) -> str:

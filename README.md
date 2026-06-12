@@ -44,6 +44,31 @@ curl -H "X-API-Key: $API_KEY" \
 
 Sin el header `X-API-Key` los endpoints responden con HTTP 403 Forbidden. La API key se configura como variable de entorno `API_KEY` (en producción vive en el `.env` de la EC2, no commiteado). Para correr localmente: `API_KEY=<tu-clave> docker compose up -d --build`. Sin esa variable, la app no arranca.
 
+### Actualizar credenciales AWS para Bronze en EC2
+
+La capa Bronze escribe snapshots crudos en S3. En produccion, el `.env` de la
+EC2 debe tener `BRONZE_BUCKET`, `AWS_ACCESS_KEY_ID`,
+`AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_DEFAULT_REGION` y
+`S3_ENDPOINT_URL=` vacio para usar S3 real en vez de MinIO.
+
+Desde Windows/PowerShell, ejecutar:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\update-aws-credentials.ps1 -PemPath C:\ruta\llave.pem -Bucket <bucket-bronze>
+```
+
+El script pide las credenciales temporales de AWS Academy si no estan en
+variables de entorno y actualiza el `.env` remoto por SSH.
+
+Desde Git Bash/Linux, ejecutar:
+
+```bash
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+export AWS_SESSION_TOKEN=...
+scripts/update-aws-credentials.sh -i /ruta/llave.pem -b <bucket-bronze>
+```
+
 ### Local
 
 Clonar el repo y desde la raíz:
