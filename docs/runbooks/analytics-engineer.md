@@ -6,9 +6,9 @@ Este runbook describe como agregar o modificar una metrica analitica del modelo 
 
 El procedimiento aplica a la capa Silver/Gold definida por la arquitectura medallion del proyecto y debe mantener alineados modelos, tests de calidad, documentacion y dashboards.
 
-## Rol, dueno y prerrequisitos
+## Rol, dueño y prerrequisitos
 
-El dueno es el analytics engineer. Necesita acceso al repositorio, permiso para abrir PRs, capacidad de ejecutar tests locales/CI y acceso de lectura a Dagster para verificar que la particion Bronze base existe.
+El dueño es el analytics engineer. Necesita acceso al repositorio, permiso para abrir PRs, capacidad de ejecutar tests locales/CI y acceso de lectura a Dagster para verificar que la particion Bronze base existe.
 
 Prerrequisitos:
 

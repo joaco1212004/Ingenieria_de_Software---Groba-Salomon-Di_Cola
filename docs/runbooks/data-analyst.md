@@ -6,9 +6,9 @@ Este runbook describe como validar que los datos estan listos para publicar o ac
 
 El objetivo del data analyst no es operar la infraestructura, sino decidir si la informacion disponible es suficientemente fresca, completa y explicable para consumo de negocio.
 
-## Rol, dueno y prerrequisitos
+## Rol, dueño y prerrequisitos
 
-El dueno es el data analyst. Necesita acceso a Dagster UI, al dashboard BI, a la documentacion del modelo de datos y al glosario de metricas. Para acciones tecnicas, coordina con data engineer o analytics engineer.
+El dueño es el data analyst. Necesita acceso a Dagster UI, al dashboard BI, a la documentacion del modelo de datos y al glosario de metricas. Para acciones tecnicas, coordina con data engineer o analytics engineer.
 
 Prerrequisitos:
 

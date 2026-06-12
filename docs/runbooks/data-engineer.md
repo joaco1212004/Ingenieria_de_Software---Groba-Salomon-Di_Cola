@@ -6,9 +6,9 @@ Este runbook describe como reprocesar una particion diaria de la capa Bronze cua
 
 El disparador normal es el schedule `bronze_daily_schedule`, todos los dias a las 06:00 America/Argentina/Buenos_Aires. El disparador manual es un pedido de reproceso de una fecha `YYYY-MM-DD`.
 
-## Rol, dueno y prerrequisitos
+## Rol, dueño y prerrequisitos
 
-El dueno es el data engineer de guardia del equipo. Necesita acceso SSH a la EC2, permisos para ver Dagster UI, acceso de lectura al bucket `bronze-data-lake-energia` y permiso para ejecutar Docker Compose en el host.
+El dueño es el data engineer de guardia del equipo. Necesita acceso SSH a la EC2, permisos para ver Dagster UI, acceso de lectura al bucket `bronze-data-lake-energia` y permiso para ejecutar Docker Compose en el host.
 
 Prerrequisitos:
 
