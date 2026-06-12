@@ -215,6 +215,11 @@ __marimo__/
 
 *.csv
 *.ipynb
+
+# Notebooks de EDA versionadas (excepcion al ignore global de arriba).
+# Commitear con outputs limpiados (ver notebooks/README.md).
+!notebooks/*.ipynb
+notebooks/.ipynb_checkpoints/
 .idea
 docs/catedra/tutorial.md
 .vscode/settings.json
