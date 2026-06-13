@@ -1,0 +1,25 @@
+# Entorno conda dedicado para el EDA exploratorio del bronze.
+#
+# Por que un env aparte y NO el poetry del repo:
+# El pyproject.toml es deliberadamente "lean" (data engineering, SQL-first via
+# dbt - ver ADR-0011). La stack de datascience (pandas/jupyter/...) no debe
+# contaminar la imagen de produccion ni el lockfile. Este env es ad-hoc, local
+# y reproducible, y vive solo para explorar los CSV crudos antes de disenar
+# silver/gold. No es parte del pipeline orquestado.
+#
+# Uso:
+#   conda env create -f notebooks/environment.yml
+#   conda activate eda-bronze
+#   python -m ipykernel install --user --name eda-bronze --display-name "EDA Bronze"
+#   jupyter lab   # abrir notebooks/01_eda_bronze.ipynb
+name: eda-bronze
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas>=2.2
+  - duckdb>=1.1
+  - pyarrow>=16
+  - jupyterlab>=4
+  - ipykernel>=6
+  - matplotlib>=3.8
