@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 /.venv
+
+# Secrets / private keys
+.env
+*.pem
+*.key
+*.ppk
+
 # Distribution / packaging
 .Python
 build/
