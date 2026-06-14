@@ -8,11 +8,12 @@ El objetivo del data analyst no es operar la infraestructura, sino decidir si la
 
 ## Rol, dueño y prerrequisitos
 
-El dueño del procedimiento es el data analyst. Necesita acceso a Dagster UI, al dashboard BI, a la documentación del modelo de datos y al glosario de métricas. Para acciones técnicas, coordina con el data engineer o el analytics engineer.
+El dueño del procedimiento es el data analyst. Necesita acceso a Dagster UI, al dashboard de Metabase, al catálogo de DataHub, a la documentación del modelo de datos y al glosario de métricas. Para acciones técnicas, coordina con el data engineer o el analytics engineer.
 
 Prerrequisitos:
 
 - Dagster UI debe estar accesible en `http://api-hidraulicos-tipazos.duckdns.org:3001`.
+- Metabase (BI) accesible en `http://<EC2-2>:3000` y DataHub (gobierno) en `http://<EC2-2>:9002`.
 - Debe existir una corrida exitosa reciente de `bronze_daily_job`.
 - La métrica o dashboard debe tener owner y definición documentada.
 - El data analyst debe conocer la fecha de datos esperada para la entrega o demo.
@@ -44,18 +45,18 @@ Prerrequisitos:
    owner técnico
    ```
 
-5. Abrir el dashboard BI y validar los filtros principales:
+5. Abrir en Metabase el dashboard **"Produccion por cuenca/empresa/periodo"** (sobre `gold.fct_produccion_pozo_mes` + dimensiones) y validar los filtros principales:
 
    ```text
-   período
-   operador
-   provincia
-   tipo de producto
+   período (dim_tiempo.anio/mes)
+   empresa (dim_empresa.empresa)
+   cuenca/provincia (dim_area)
+   tipo de producto (prod_pet / prod_gas_m3)
    ```
 
-6. Comparar una muestra de la métrica contra una consulta o cálculo de control acordado con el analytics engineer.
+6. Comparar una muestra de la métrica contra una consulta o cálculo de control acordado con el analytics engineer (query base en `infra/datahub/README.md`).
 
-7. Verificar que el dashboard muestre o comunique la fecha de última actualización.
+7. Verificar la fecha de última actualización en DataHub (`http://<EC2-2>:9002`, `last_updated` por tabla de `gold`) o comunicada junto al dashboard.
 
 8. Publicar el dashboard solo si la corrida es exitosa, la frescura está dentro del umbral y la métrica coincide con la definición documentada.
 

@@ -86,6 +86,38 @@ bash scripts/materialize-bronze.sh YYYY-MM-DD
 
 Tambien se puede lanzar/backfillear desde la UI de Dagster seleccionando las particiones del grupo `bronze`.
 
+### BI y Gobierno de datos (Fase 2)
+
+BI (Metabase) y gobierno (DataHub) corren en una **segunda instancia (EC2-2)**
+aparte del stack de datos, por su consumo de RAM. Se conectan al warehouse de
+EC2-1. Detalle operativo en [`infra/datahub/README.md`](infra/datahub/README.md).
+
+- **Metabase (BI):** `http://<EC2-2>:3000`. Usuarios no tecnicos exploran el
+  schema `gold`. Dashboard de produccion por cuenca/empresa/periodo sobre
+  `fct_produccion_pozo_mes` + dimensiones.
+- **DataHub (gobierno):** `http://<EC2-2>:9002`. Catalogo del warehouse con
+  `last_updated` por tabla, **lineage navegable a nivel tabla** (staging -> marts)
+  y resultados de los dbt tests por tabla.
+
+Topologia y deploy:
+
+```text
+EC2-1  api · postgres-dwh(warehouse) · dagster · prometheus · grafana · minio
+EC2-2  metabase(:3000) + metabase-db   |   datahub web(:9002) · GMS(:8080)
+       Metabase --query--> EC2-1:5432 (gold)
+       Dagster/EC2-1 --ingest--> EC2-2:8080 (postgres + dbt metadata)
+```
+
+- **Exponer el warehouse a EC2-2:** en el `.env` de EC2-1 setear
+  `POSTGRES_BIND=<ip-privada-EC2-1>` y abrir el inbound 5432 en el security group
+  **solo desde EC2-2**. Variables de ejemplo en
+  [`infra/platforms.env.example`](infra/platforms.env.example).
+- **Deploy:** lo automatiza el workflow paralelo
+  `.github/workflows/deploy-platforms.yml` (deploya EC2-2 y dispara la ingestion
+  de metadata desde EC2-1). Manual: `scripts/datahub-up.sh` (EC2-2) +
+  `docker compose -f infra/metabase/docker-compose.metabase.yml up -d` (EC2-2) +
+  `scripts/datahub-ingest.sh` (EC2-1).
+
 ### Local
 
 Desde la raiz:

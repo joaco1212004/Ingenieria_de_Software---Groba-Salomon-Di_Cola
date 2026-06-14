@@ -1,0 +1,38 @@
+# Receta de ingestion DataHub: WAREHOUSE Postgres (EC2-1) -> catalogo + last_updated.
+#
+# Cubre el MUST de gobierno: ver los datos del warehouse y la ultima vez que se
+# actualizaron (last_modified por tabla). Se corre DESDE EC2-1 (warehouse local)
+# y publica al GMS de DataHub en EC2-2.
+#
+# Variables (ver infra/platforms.env.example):
+#   WAREHOUSE_HOST_PORT  ej. localhost:5432  (local a EC2-1)
+#   WAREHOUSE_DB         warehouse
+#   WAREHOUSE_USER       dwh
+#   WAREHOUSE_PASSWORD   <secreto>
+#   DATAHUB_GMS          http://<ip-privada-EC2-2>:8080
+#   DATAHUB_TOKEN        (opcional, si DataHub tiene auth de metadata)
+
+source:
+  type: postgres
+  config:
+    host_port: '${WAREHOUSE_HOST_PORT:-localhost:5432}'
+    database: '${WAREHOUSE_DB:-warehouse}'
+    username: '${WAREHOUSE_USER:-dwh}'
+    password: '${WAREHOUSE_PASSWORD}'
+    # Solo las capas del medallion que interesan a gobierno/BI.
+    schema_pattern:
+      allow:
+        - '^gold$'
+        - '^silver$'
+        - '^audit$'
+    include_tables: true
+    include_views: true
+    # Perfilado liviano: trae stats y last_modified sin escanear todo.
+    profiling:
+      enabled: false
+
+sink:
+  type: datahub-rest
+  config:
+    server: '${DATAHUB_GMS:-http://localhost:8080}'
+    token: '${DATAHUB_TOKEN:-}'

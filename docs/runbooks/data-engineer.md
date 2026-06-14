@@ -119,6 +119,8 @@ Seguridad: la EC2 usa IAM Role y no access keys persistidas. No se deben commite
 
 Calidad operativa: un backfill fallido bloquea la promoción de esa fecha hacia Silver/Gold. No se deben publicar métricas de negocio sobre una partición Bronze incompleta.
 
+Gobernanza: cuando el reproceso propaga cambios a Silver/Gold, re-ingestar metadata a DataHub con `scripts/datahub-ingest.sh` para que el catálogo y el `last_updated` por tabla reflejen la nueva frescura que consume el data analyst.
+
 ## Decisión funcional justificada
 
 Decisión: Bronze guarda snapshots completos de ambas fuentes para cada `fecha_extraccion`, sin transformar columnas ni filtrar registros.

@@ -1,0 +1,69 @@
+name: Deploy Platforms (Metabase + DataHub)
+
+# CD paralelo al de ci.yml (que deploya EC2-1). Este deploya EC2-2 (plataformas)
+# y dispara la ingestion de metadata a DataHub desde EC2-1.
+#
+# Secrets requeridos:
+#   EC2_PLATFORMS_HOST  host/DNS de EC2-2
+#   EC2_SSH_KEY         clave SSH (se reutiliza la del deploy actual)
+#
+# Durante el desarrollo en feature/datahub-ec2-large usar "Run workflow"
+# (workflow_dispatch). En main, corre solo al tocar infra/ o estos scripts.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/datahub/**'
+      - 'infra/metabase/**'
+      - 'scripts/datahub-up.sh'
+      - 'scripts/datahub-ingest.sh'
+      - '.github/workflows/deploy-platforms.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-platforms:
+    name: Deploy Metabase + DataHub (EC2-2)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy via SSH a EC2-2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_PLATFORMS_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd Ingenieria_de_Software---Groba-Salomon-Di_Cola
+            git config pull.ff only
+            git pull origin main
+            set -a; . ./.env; set +a
+            # DataHub (quickstart oficial pinneado por DATAHUB_VERSION)
+            ./scripts/datahub-up.sh
+            # Metabase + su Postgres de metadata
+            docker compose -f infra/metabase/docker-compose.metabase.yml --env-file .env up -d
+            sleep 20
+            # smoke: BI y gobierno responden
+            curl --fail --silent http://localhost:3000/api/health >/dev/null
+            curl --fail --silent http://localhost:9002/ >/dev/null
+            echo "EC2-2 (Metabase + DataHub) OK"
+
+  ingest-metadata:
+    name: Ingestar metadata a DataHub (desde EC2-1)
+    runs-on: ubuntu-latest
+    needs: deploy-platforms
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Ingestion via SSH a EC2-1
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: api-hidraulicos-tipazos.duckdns.org
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd Ingenieria_de_Software---Groba-Salomon-Di_Cola
+            git pull origin main
+            set -a; . ./.env; set +a
+            # acryl-datahub debe estar instalado en EC2-1 (pipx install 'acryl-datahub[postgres,dbt]==1.1.0')
+            ./scripts/datahub-ingest.sh
+            echo "Metadata ingestada a DataHub"

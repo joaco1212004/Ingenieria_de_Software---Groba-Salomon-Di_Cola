@@ -1,0 +1,58 @@
+# Metabase (plataforma de BI - ADR-0017) para EC2-2.
+#
+# Corre junto a DataHub en la instancia grande aparte. Metabase guarda su
+# metadata de aplicacion en un Postgres dedicado (metabase-db), NO en el H2
+# embebido (ADR-0017: "metadata persiste en Postgres"), para sobrevivir
+# restarts y poder respaldarse.
+#
+# La conexion al WAREHOUSE (Postgres de EC2-1, schema gold) NO se define aca:
+# Metabase no provisiona data sources de forma declarativa. Se agrega una sola
+# vez desde la UI (Admin -> Databases -> Add) apuntando a la ip privada de
+# EC2-1:5432, db 'warehouse'. Ver README e infra/metabase/.env.example.
+#
+# Uso en EC2-2:
+#   docker compose -f infra/metabase/docker-compose.metabase.yml --env-file .env up -d
+
+services:
+  metabase:
+    image: metabase/metabase:v0.51.6
+    container_name: predictiva-metabase
+    ports:
+      - '${METABASE_PORT:-3000}:3000'
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: '${MB_DB_DBNAME:-metabase}'
+      MB_DB_PORT: 5432
+      MB_DB_USER: '${MB_DB_USER:-metabase}'
+      MB_DB_PASS: '${MB_DB_PASS:?Set MB_DB_PASS in .env}'
+      MB_DB_HOST: metabase-db
+      JAVA_TIMEZONE: America/Argentina/Buenos_Aires
+    depends_on:
+      metabase-db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, curl, --fail, 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  metabase-db:
+    image: postgres:16
+    container_name: predictiva-metabase-db
+    environment:
+      POSTGRES_DB: '${MB_DB_DBNAME:-metabase}'
+      POSTGRES_USER: '${MB_DB_USER:-metabase}'
+      POSTGRES_PASSWORD: '${MB_DB_PASS:?Set MB_DB_PASS in .env}'
+    volumes:
+      - metabase_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  metabase_db_data:

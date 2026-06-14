@@ -1,0 +1,30 @@
+# Receta de ingestion DataHub: dbt -> lineage tabla->tabla (MUST) + tests.
+#
+# Lee los artefactos que dbt genera en dbt/target/ (manifest.json + catalog.json
+# + run_results.json). El catalog.json requiere `dbt docs generate` (lo corre
+# scripts/datahub-ingest.sh antes de esta receta). Se corre DESDE EC2-1, donde
+# viven los artefactos, y publica al GMS de EC2-2.
+#
+# target_platform=postgres + la misma platform_instance que la receta de
+# Postgres hacen que los nodos dbt se asocien a las MISMAS entidades que las
+# tablas fisicas -> el lineage cruza staging (silver) -> marts (gold) sobre las
+# tablas reales del warehouse.
+
+source:
+  type: dbt
+  config:
+    manifest_path: '${DBT_TARGET_DIR:-./dbt/target}/manifest.json'
+    catalog_path: '${DBT_TARGET_DIR:-./dbt/target}/catalog.json'
+    run_results_paths:
+      - '${DBT_TARGET_DIR:-./dbt/target}/run_results.json'
+    target_platform: postgres
+    # Los resultados de los dbt tests entran como assertions visibles por tabla
+    # automaticamente al proveer run_results.json (refuerza la "marca de calidad
+    # visible" del ADR-0015). En datahub 1.1.0 no hay toggle test_results_enabled.
+    include_column_lineage: true
+
+sink:
+  type: datahub-rest
+  config:
+    server: '${DATAHUB_GMS:-http://localhost:8080}'
+    token: '${DATAHUB_TOKEN:-}'

@@ -33,7 +33,10 @@ services:
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-dwh}'
       DBT_THREADS: '${DBT_THREADS:-2}'
     ports:
-      - 127.0.0.1:5432:5432
+      # Por defecto solo localhost. En EC2-1 setear POSTGRES_BIND=<ip-privada-EC2-1>
+      # para que Metabase (EC2-2) pueda consultar el warehouse. El acceso se
+      # restringe ademas por security group (inbound 5432 solo desde EC2-2).
+      - '${POSTGRES_BIND:-127.0.0.1}:5432:5432'
     volumes:
       - postgres_dwh_data:/var/lib/postgresql/data
       - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro

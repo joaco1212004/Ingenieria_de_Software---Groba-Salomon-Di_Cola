@@ -42,14 +42,14 @@ Prerrequisitos:
 
 4. Agregar o modificar modelos Silver para tipar columnas, normalizar nombres y resolver claves naturales.
 
-5. Agregar o modificar modelos Gold con modelo estrella:
+5. Agregar o modificar modelos Gold con modelo estrella (nombres reales en `dbt/models/marts/`):
 
    ```text
-   fact_produccion_mensual
+   fct_produccion_pozo_mes   (grano idpozo, anio, mes)
    dim_pozo
-   dim_operador
-   dim_fecha
-   dim_geografia
+   dim_empresa
+   dim_tiempo
+   dim_area                  (cuenca/provincia/yacimiento/concesion aplanados)
    ```
 
 6. Agregar tests de calidad asociados a la métrica:
@@ -62,7 +62,7 @@ Prerrequisitos:
    relationships: fact table referencia dimensiones existentes
    ```
 
-7. Actualizar la documentación del modelo de datos con grano, dimensiones, surrogate keys y decisión SCD.
+7. Actualizar la documentación del modelo de datos con grano, dimensiones, surrogate keys y decisión SCD. Tras mergear y correr el pipeline, re-ingestar metadata a DataHub (`scripts/datahub-ingest.sh`) para que el nuevo modelo y su lineage queden visibles en el catálogo.
 
 8. Correr tests locales o esperar el CI del PR:
 
@@ -84,6 +84,7 @@ El cambio está listo si:
 - Los tests de calidad pasan y sus resultados quedan persistidos o publicados como artefacto del pipeline.
 - La métrica calculada coincide con una muestra manual tomada desde el CSV fuente.
 - El dashboard o consulta BI que consume la métrica no cambia de significado sin aprobación del data analyst.
+- El lineage tabla→tabla del nuevo/modificado modelo se navega en DataHub (`http://<EC2-2>:9002`) desde `stg_*` hasta `fct/dim_*`.
 
 ## Si algo falla
 
