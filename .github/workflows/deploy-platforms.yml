@@ -64,6 +64,6 @@ jobs:
             cd Ingenieria_de_Software---Groba-Salomon-Di_Cola
             git pull origin main
             set -a; . ./.env; set +a
-            # acryl-datahub debe estar instalado en EC2-1 (pipx install 'acryl-datahub[postgres,dbt]')
+            # acryl-datahub debe estar instalado en EC2-1 (pipx install 'acryl-datahub[postgres,dbt]==1.1.0')
             ./scripts/datahub-ingest.sh
             echo "Metadata ingestada a DataHub"

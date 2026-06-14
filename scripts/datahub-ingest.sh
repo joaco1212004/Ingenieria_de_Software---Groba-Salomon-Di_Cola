@@ -7,7 +7,7 @@
 # estan locales tanto el warehouse Postgres como los artefactos dbt (dbt/target).
 #
 # Prerequisitos en EC2-1:
-#   pipx install 'acryl-datahub[postgres,dbt]'   (o venv dedicado)
+#   pipx install 'acryl-datahub[postgres,dbt]==1.1.0'   (o venv dedicado)
 #   variables de entorno cargadas (ver infra/platforms.env.example):
 #     WAREHOUSE_HOST_PORT, WAREHOUSE_DB, WAREHOUSE_USER, WAREHOUSE_PASSWORD,
 #     DATAHUB_GMS (http://<ip-privada-EC2-2>:8080), DATAHUB_TOKEN (opcional)
@@ -31,7 +31,7 @@ elif [[ -x "$HOME/.local/bin/datahub" ]]; then
   DATAHUB="$HOME/.local/bin/datahub"
 else
   echo "[datahub-ingest] datahub CLI no encontrado. Instalalo con:" >&2
-  echo "  pipx install 'acryl-datahub[postgres,dbt]'" >&2
+  echo "  pipx install 'acryl-datahub[postgres,dbt]==1.1.0'" >&2
   exit 1
 fi
 
