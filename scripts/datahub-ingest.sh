@@ -16,8 +16,24 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-DATAHUB="${DATAHUB_EXECUTABLE:-datahub}"
 export DBT_TARGET_DIR="${DBT_TARGET_DIR:-$ROOT/dbt/target}"
+
+# datahub CLI se instala con pipx (~/.local/bin), que en shells no-login (CD via
+# SSH) no esta en el PATH. Orden de resolucion:
+#   1) DATAHUB_EXECUTABLE explicito.
+#   2) 'datahub' en el PATH.
+#   3) ~/.local/bin/datahub (ubicacion tipica de pipx).
+if [[ -n "${DATAHUB_EXECUTABLE:-}" ]]; then
+  DATAHUB="$DATAHUB_EXECUTABLE"
+elif command -v datahub >/dev/null 2>&1; then
+  DATAHUB="datahub"
+elif [[ -x "$HOME/.local/bin/datahub" ]]; then
+  DATAHUB="$HOME/.local/bin/datahub"
+else
+  echo "[datahub-ingest] datahub CLI no encontrado. Instalalo con:" >&2
+  echo "  pipx install 'acryl-datahub[postgres,dbt]'" >&2
+  exit 1
+fi
 
 # dbt vive en el venv de Poetry (no global). Orden de resolucion:
 #   1) DBT_EXECUTABLE explicito (un solo token, p.ej. ruta absoluta del venv).
