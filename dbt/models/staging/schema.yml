@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: stg_listado_pozos
+    description: Tabla Silver normalizada del maestro de pozos.
+    columns:
+      - name: idpozo
+        description: Clave natural del pozo.
+        tests:
+          - not_null
+          - unique
+      - name: fecha_extraccion
+        tests:
+          - not_null
+
+  - name: stg_produccion_no_convencional
+    description: Tabla Silver normalizada de produccion mensual por pozo.
+    columns:
+      - name: grain_produccion_pozo_mes
+        description: Clave deterministica del grano idpozo-anio-mes.
+        tests:
+          - not_null
+          - unique
+      - name: idpozo
+        tests:
+          - not_null
+      - name: anio
+        tests:
+          - not_null
+      - name: mes
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                quote: false
+      - name: prod_pet
+        tests:
+          - not_null
+      - name: prod_gas
+        tests:
+          - not_null
+      - name: prod_agua
+        tests:
+          - not_null
+      - name: fecha_extraccion
+        tests:
+          - not_null

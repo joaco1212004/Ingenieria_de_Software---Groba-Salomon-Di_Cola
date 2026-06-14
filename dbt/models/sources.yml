@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: Tablas cargadas desde los snapshots Bronze en S3.
+    tables:
+      - name: listado_pozos
+        description: Snapshot aterrizado del listado de pozos.
+        meta:
+          dagster:
+            asset_key: ["listado_pozos_raw"]
+      - name: produccion_no_convencional
+        description: Snapshot aterrizado de produccion no convencional.
+        meta:
+          dagster:
+            asset_key: ["produccion_no_convencional_raw"]

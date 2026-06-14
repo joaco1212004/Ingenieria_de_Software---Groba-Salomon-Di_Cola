@@ -11,4 +11,6 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
+RUN poetry run dbt parse --project-dir dbt --profiles-dir dbt
+
 CMD ["uvicorn", "api.main:api", "--host", "0.0.0.0", "--port", "8000"]

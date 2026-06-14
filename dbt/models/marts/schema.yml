@@ -1,0 +1,89 @@
+version: 2
+
+models:
+  - name: dim_pozo
+    description: Dimension SCD tipo 1 de pozos.
+    columns:
+      - name: sk_pozo
+        tests:
+          - not_null
+          - unique
+      - name: idpozo
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_empresa
+    description: Dimension SCD tipo 1 de operadoras.
+    columns:
+      - name: sk_empresa
+        tests:
+          - not_null
+          - unique
+      - name: idempresa
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_area
+    description: Dimension SCD tipo 1 de area, yacimiento, cuenca y provincia.
+    columns:
+      - name: sk_area
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_tiempo
+    description: Dimension de calendario mensual.
+    columns:
+      - name: sk_tiempo
+        tests:
+          - not_null
+          - unique
+      - name: fecha_periodo
+        tests:
+          - not_null
+
+  - name: fct_produccion_pozo_mes
+    description: Fact mensual de produccion e inyeccion por pozo.
+    columns:
+      - name: sk_produccion_pozo_mes
+        tests:
+          - not_null
+          - unique
+      - name: sk_pozo
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_pozo')
+                field: sk_pozo
+      - name: sk_empresa
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_empresa')
+                field: sk_empresa
+      - name: sk_area
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_area')
+                field: sk_area
+      - name: sk_tiempo
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_tiempo')
+                field: sk_tiempo
+      - name: idpozo_natural
+        tests:
+          - not_null
+      - name: anio
+        tests:
+          - not_null
+      - name: mes
+        tests:
+          - not_null

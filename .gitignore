@@ -12,6 +12,7 @@ __pycache__/
 *.pem
 *.key
 *.ppk
+dbt/.user.yml
 
 # Distribution / packaging
 .Python
