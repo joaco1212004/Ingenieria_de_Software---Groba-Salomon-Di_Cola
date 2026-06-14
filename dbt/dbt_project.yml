@@ -1,0 +1,37 @@
+name: predictiva_medallion
+version: "1.0.0"
+config-version: 2
+
+profile: predictiva
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  fecha_extraccion: "{{ env_var('DBT_FECHA_EXTRACCION', '1970-01-01') }}"
+
+models:
+  predictiva_medallion:
+    staging:
+      +materialized: incremental
+      +schema: silver
+      +on_schema_change: sync_all_columns
+      +tags: ["silver"]
+    audit:
+      +materialized: incremental
+      +schema: audit
+      +on_schema_change: sync_all_columns
+      +tags: ["audit"]
+    marts:
+      +materialized: incremental
+      +schema: gold
+      +on_schema_change: sync_all_columns
+      +tags: ["gold"]
+
+data_tests:
+  predictiva_medallion:
+    +store_failures: true
+    +schema: audit
