@@ -16,6 +16,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# Cargar el .env del repo si existe, para no depender de que el caller lo haya
+# sourceado (WAREHOUSE_*, DATAHUB_GMS, etc.). Las vars ya presentes en el entorno
+# tienen prioridad si se exportan despues; aca solo garantizamos un piso.
+[[ -f "$ROOT/.env" ]] && { set -a; . "$ROOT/.env"; set +a; }
+
 export DBT_TARGET_DIR="${DBT_TARGET_DIR:-$ROOT/dbt/target}"
 
 # datahub CLI se instala con pipx (~/.local/bin), que en shells no-login (CD via
