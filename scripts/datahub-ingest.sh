@@ -17,12 +17,23 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 DATAHUB="${DATAHUB_EXECUTABLE:-datahub}"
-DBT="${DBT_EXECUTABLE:-dbt}"
 export DBT_TARGET_DIR="${DBT_TARGET_DIR:-$ROOT/dbt/target}"
 
+# dbt vive en el venv de Poetry (no global). Orden de resolucion:
+#   1) DBT_EXECUTABLE explicito (un solo token, p.ej. ruta absoluta del venv).
+#   2) 'dbt' en el PATH (venv ya activado).
+#   3) fallback 'poetry run dbt' (CD y EC2-1 sin venv activado).
+if [[ -n "${DBT_EXECUTABLE:-}" ]]; then
+  DBT=("$DBT_EXECUTABLE")
+elif command -v dbt >/dev/null 2>&1; then
+  DBT=(dbt)
+else
+  DBT=(poetry run dbt)
+fi
+
 # 1) Generar manifest.json + catalog.json (catalog consulta el warehouse).
-echo "[datahub-ingest] dbt docs generate"
-"$DBT" docs generate --project-dir "$ROOT/dbt" --profiles-dir "$ROOT/dbt"
+echo "[datahub-ingest] dbt docs generate (${DBT[*]})"
+"${DBT[@]}" docs generate --project-dir "$ROOT/dbt" --profiles-dir "$ROOT/dbt"
 
 # 2) Ingerir cada receta (orden: tablas fisicas primero, luego lineage dbt).
 for recipe in postgres_warehouse dbt; do
