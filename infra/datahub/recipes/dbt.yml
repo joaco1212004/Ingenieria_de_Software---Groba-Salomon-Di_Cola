@@ -18,9 +18,9 @@ source:
     run_results_paths:
       - '${DBT_TARGET_DIR:-./dbt/target}/run_results.json'
     target_platform: postgres
-    # Trae los resultados de los dbt tests como assertions visibles por tabla
-    # (refuerza la "marca de calidad visible" del ADR-0015).
-    test_results_enabled: true
+    # Los resultados de los dbt tests entran como assertions visibles por tabla
+    # automaticamente al proveer run_results.json (refuerza la "marca de calidad
+    # visible" del ADR-0015). En datahub 1.1.0 no hay toggle test_results_enabled.
     include_column_lineage: true
 
 sink:

@@ -13,13 +13,14 @@ del stack de datos de EC2-1, y se conectan al warehouse Postgres de EC2-1.
 2. Security group EC2-1: inbound `5432` **solo desde el SG/IP de EC2-2**.
 3. Password real del warehouse (`POSTGRES_PASSWORD`), no el default `dwh`.
 4. CLI de ingestion aislado: `pipx install 'acryl-datahub[postgres,dbt]==1.1.0'`.
-   El pin importa: el CLI mas nuevo (>=1.6) no soporta lanzar/ingerir contra el
-   server pinneado `v0.14.1` (ver DATAHUB_VERSION). El 1.1.0 es el ultimo que si.
+   El pin importa: el CLI y el GMS tienen que ser la MISMA version (`1.1.0` ==
+   server `v1.1.0`). Un CLI mas nuevo manda aspectos que un GMS viejo rechaza
+   (p.ej. `/env` en ContainerProperties -> 0 records escritos).
 
 ### EC2-2 (plataformas)
 1. Docker + Docker Compose, >= 8 GB RAM libres.
-2. `pipx install 'acryl-datahub==1.1.0'` (para el quickstart). Pin obligatorio: el
-   CLI >=1.6 rechaza el server `v0.14.1` ("Minimum supported version not met").
+2. `pipx install 'acryl-datahub==1.1.0'` (para el quickstart; lanza el server
+   `v1.1.0`). El CLI tiene que matchear `DATAHUB_VERSION`.
 3. `.env` con las variables de `infra/platforms.env.example`.
 4. Security group EC2-2: inbound `9002` y `3000` desde IPs del equipo; inbound
    `8080` (GMS) **solo desde EC2-1**; outbound a EC2-1:5432.

@@ -8,14 +8,14 @@
 # + este wrapper + las recetas de ingestion.
 #
 # Prerequisitos en EC2-2:
-#   pipx install 'acryl-datahub==1.1.0'   (el CLI >=1.6 no soporta el server v0.14.1)
+#   pipx install 'acryl-datahub==1.1.0'   (el CLI debe matchear el server v1.1.0)
 #   Docker con >= 8 GB RAM disponibles (DataHub levanta ES + Kafka + MySQL + GMS).
 #
 # Expone: frontend web en :9002, GMS (metadata API) en :8080.
 set -euo pipefail
 
 DATAHUB="${DATAHUB_EXECUTABLE:-datahub}"
-VERSION="${DATAHUB_VERSION:-v0.14.1}"
+VERSION="${DATAHUB_VERSION:-v1.1.0}"
 
 echo "[datahub-up] quickstart ${VERSION}"
 "$DATAHUB" docker quickstart --version "$VERSION"
