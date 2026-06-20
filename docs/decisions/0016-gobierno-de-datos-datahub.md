@@ -2,13 +2,7 @@
 
 ## Contexto y Declaración del Problema
 
-La adenda exige una **plataforma de gobierno de datos** donde se puedan
-ver: los workflows de extracción, los datos del warehouse y la última vez
-que fueron actualizados; con **lineage navegable a nivel tabla**. Además
-fija el marco de la decisión: "DEBE estar implementada con alguna
-herramienta vista en clase o tutoría (**DataHub**). PUEDEN explorar
-alternativas si está debidamente justificado" — es decir, apartarse de
-DataHub tiene carga de justificación extra.
+La adenda exige una **plataforma de gobierno de datos** donde se puedan ver: los workflows de extracción, los datos del warehouse y la última vez que fueron actualizados; con **lineage navegable a nivel tabla**. Además fija el marco de la decisión: "DEBE estar implementada con alguna herramienta vista en clase o tutoría (**DataHub**). PUEDEN explorar alternativas si está debidamente justificado" — es decir, apartarse de DataHub tiene carga de justificación extra.
 
 Las fuentes de metadata son el stack ya decidido: Postgres
 ([ADR-0012](0012-warehouse-postgresql.md)), dbt

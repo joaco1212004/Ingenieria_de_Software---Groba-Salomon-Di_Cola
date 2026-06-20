@@ -45,7 +45,7 @@ Prerrequisitos:
    owner técnico
    ```
 
-5. Abrir en Metabase el dashboard **"Produccion por cuenca/empresa/periodo"** (sobre `gold.fct_produccion_pozo_mes` + dimensiones) y validar los filtros principales:
+5. Abrir en Metabase el dashboard **"Produccion por cuenca/empresa/periodo"** (sobre `gold.fct_produccion_pozo_mes` + dimensiones; ver diseño y campos exactos en [`bi-dashboards.md`](./bi-dashboards.md)) y validar los filtros principales:
 
    ```text
    período (dim_tiempo.anio/mes)

@@ -94,7 +94,9 @@ EC2-1. Detalle operativo en [`infra/datahub/README.md`](infra/datahub/README.md)
 
 - **Metabase (BI):** `http://<EC2-2>:3000`. Usuarios no tecnicos exploran el
   schema `gold`. Dashboard de produccion por cuenca/empresa/periodo sobre
-  `fct_produccion_pozo_mes` + dimensiones.
+  `fct_produccion_pozo_mes` + dimensiones. Catalogo de dashboards (produccion,
+  calidad, pozos, mapa) y campos exactos en
+  [`docs/runbooks/bi-dashboards.md`](docs/runbooks/bi-dashboards.md).
 - **DataHub (gobierno):** `http://<EC2-2>:9002`. Catalogo del warehouse con
   `last_updated` por tabla, **lineage navegable a nivel tabla** (staging -> marts)
   y resultados de los dbt tests por tabla.
