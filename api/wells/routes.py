@@ -9,7 +9,8 @@ from api.security import verify_api_key
 
 router = APIRouter()
 
-_WELLS_QUERY = text("""
+_WELLS_QUERY = text(
+    """
     SELECT DISTINCT dp.sigla AS id_well
     FROM gold.dim_pozo dp
     JOIN gold.fct_produccion_pozo_mes f ON dp.sk_pozo = f.sk_pozo
@@ -17,7 +18,8 @@ _WELLS_QUERY = text("""
     WHERE dt.fecha_periodo <= :date_query
       AND dp.sigla != 'DESCONOCIDO'
     ORDER BY dp.sigla
-""")
+"""
+)
 
 
 @router.get("/wells")
