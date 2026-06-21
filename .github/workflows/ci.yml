@@ -110,115 +110,7 @@ jobs:
         run: poetry install
 
       - name: Preparar datos raw minimos
-        run: |
-          poetry run python - <<'PY'
-          import pandas as pd
-          from sqlalchemy import create_engine, text
-
-          engine = create_engine("postgresql+psycopg2://dwh:dwh@localhost:5432/warehouse")
-          fecha = pd.to_datetime("2026-06-12").date()
-
-          listado = pd.DataFrame([
-              {
-                  "idpozo": "10",
-                  "sigla": "ABC",
-                  "formprod": "Vaca Muerta",
-                  "idempresa": "YPF",
-                  "idareapermisoconcesion": "A1",
-                  "idareayacimiento": "Y1",
-                  "idcuenca": "C1",
-                  "idprovincia": "P1",
-                  "codigopropio": "CP1",
-                  "nombrepropio": "Pozo 10",
-                  "coordenadax": "-68.5",
-                  "coordenaday": "-38.2",
-                  "cota": "100",
-                  "profundidad": "2500",
-                  "pet_inicial": "1",
-                  "gas_inicial": "2",
-                  "agua_inicial": "3",
-                  "iny_agua_inicial": "0",
-                  "iny_gas_inicial": "0",
-                  "iny_otros_inicial": "0",
-                  "iny_co2_inicial": "0",
-                  "vida_util_inicial": "20",
-                  "areapermisoconcesion": "Area 1",
-                  "areayacimiento": "Yacimiento 1",
-                  "cuenca": "Neuquina",
-                  "provincia": "Neuquen",
-                  "clasificacion": "Productivo",
-                  "subclasificacion": "Gas",
-                  "tipo_reservorio": "No convencional",
-                  "subtipo_reservorio": "Shale",
-                  "comp_perf": "Completo",
-                  "gasplus": "t",
-                  "fecha_extraccion": fecha,
-                  "source_uri": "s3://test/listado.csv",
-                  "loaded_at": pd.Timestamp.utcnow(),
-                  "raw_row_number": 1,
-              }
-          ])
-
-          produccion = pd.DataFrame([
-              {
-                  "idempresa": "YPF",
-                  "anio": "2026",
-                  "mes": "2",
-                  "idpozo": "10",
-                  "prod_pet": "1",
-                  "prod_gas": "2",
-                  "prod_agua": "3",
-                  "iny_agua": "0",
-                  "iny_gas": "0",
-                  "iny_co2": "0",
-                  "iny_otro": "0",
-                  "tef": "30",
-                  "tipoextraccion": "Surgencia",
-                  "tipoestado": "Activo",
-                  "tipopozo": "Gasifero",
-                  "fechaingreso": "2026-02-01",
-                  "fecha_data": "2026-02-28",
-                  "rectificado": "f",
-                  "habilitado": "t",
-                  "empresa": "YPF",
-                  "sigla": "ABC",
-                  "formprod": "Vaca Muerta",
-                  "profundidad": "2500",
-                  "formacion": "Vaca Muerta",
-                  "idareapermisoconcesion": "A1",
-                  "areapermisoconcesion": "Area 1",
-                  "idareayacimiento": "Y1",
-                  "areayacimiento": "Yacimiento 1",
-                  "idcuenca": "C1",
-                  "cuenca": "Neuquina",
-                  "idprovincia": "P1",
-                  "provincia": "Neuquen",
-                  "proyecto": "Proyecto 1",
-                  "clasificacion": "Productivo",
-                  "subclasificacion": "Gas",
-                  "sub_tipo_recurso": "Shale",
-                  "coordenadax": "-68.5",
-                  "coordenaday": "-38.2",
-                  "fecha_extraccion": fecha,
-                  "source_uri": "s3://test/produccion.csv",
-                  "loaded_at": pd.Timestamp.utcnow(),
-                  "raw_row_number": 1,
-              }
-          ])
-
-          with engine.begin() as conn:
-              conn.execute(text("CREATE SCHEMA IF NOT EXISTS raw"))
-              conn.execute(text("CREATE SCHEMA IF NOT EXISTS audit"))
-
-          listado.to_sql("listado_pozos", engine, schema="raw", if_exists="replace", index=False)
-          produccion.to_sql(
-              "produccion_no_convencional",
-              engine,
-              schema="raw",
-              if_exists="replace",
-              index=False,
-          )
-          PY
+        run: poetry run python scripts/seed_demo_data.py
 
       - name: Correr dbt build
         run: >
@@ -259,6 +151,21 @@ jobs:
 
       - name: Levantar el stack
         run: docker compose up -d --build
+
+      - name: Materializar capa gold (datos demo)
+        # La API consulta el esquema estrella en gold. Tras un `compose up`
+        # fresco esas tablas no existen hasta correr el pipeline, asi que
+        # sembramos raw minimo y ejecutamos dbt build dentro del contenedor
+        # (POSTGRES_HOST=postgres-dwh ya esta seteado en su environment).
+        run: |
+          for i in $(seq 1 30); do
+            docker compose exec -T postgres-dwh pg_isready -U dwh -d warehouse && break
+            sleep 2
+          done
+          docker compose exec -T api python scripts/seed_demo_data.py
+          docker compose exec -T api dbt build \
+            --project-dir dbt --profiles-dir dbt \
+            --vars '{"fecha_extraccion": "2026-06-12"}'
 
       - name: Correr integration test
         run: ./scripts/integration-test.sh
