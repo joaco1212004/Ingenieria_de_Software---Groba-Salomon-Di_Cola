@@ -1,7 +1,12 @@
-name: Deploy Platforms (Metabase + DataHub)
+name: Deploy Platforms (Metabase + DataHub + MLflow)
 
 # CD paralelo al de ci.yml (que deploya EC2-1). Este deploya EC2-2 (plataformas)
 # y dispara la ingestion de metadata a DataHub desde EC2-1.
+#
+# El ruteo de destino es por PATH, no por rama: todo mergea a main y el filtro
+# `paths:` decide que corre aca (EC2-2). ci.yml deploya el compose principal a
+# EC2-1 (small). MLflow vive en infra/mlflow/** -> lo lleva este workflow a la
+# large, sin tocar la small saturada.
 #
 # Secrets requeridos:
 #   EC2_PLATFORMS_HOST  host/DNS de EC2-2
@@ -16,6 +21,7 @@ on:
     paths:
       - 'infra/datahub/**'
       - 'infra/metabase/**'
+      - 'infra/mlflow/**'
       - 'scripts/datahub-up.sh'
       - 'scripts/datahub-ingest.sh'
       - '.github/workflows/deploy-platforms.yml'
@@ -42,11 +48,14 @@ jobs:
             ./scripts/datahub-up.sh
             # Metabase + su Postgres de metadata
             docker compose -f infra/metabase/docker-compose.metabase.yml --env-file .env up -d
+            # MLflow tracking + registry (server + Postgres + MinIO propios)
+            docker compose -f infra/mlflow/docker-compose.mlflow.yml --env-file .env up -d --build
             sleep 20
-            # smoke: BI y gobierno responden
+            # smoke: BI, gobierno y tracking responden
             curl --fail --silent http://localhost:3000/api/health >/dev/null
             curl --fail --silent http://localhost:9002/ >/dev/null
-            echo "EC2-2 (Metabase + DataHub) OK"
+            curl --fail --silent http://localhost:5000/health >/dev/null
+            echo "EC2-2 (Metabase + DataHub + MLflow) OK"
 
   ingest-metadata:
     name: Ingestar metadata a DataHub (desde EC2-1)
