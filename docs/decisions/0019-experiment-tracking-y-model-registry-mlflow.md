@@ -45,6 +45,9 @@ plataforma sobre la infraestructura ya construida en Fase 2: PostgreSQL
   orientado a metadata de experimentos.
 - **Opción D — DVC.** Versionado de datos y pipelines sobre Git + storage
   remoto, con `dvc exp` para experimentos.
+- **Opción E — AWS SageMaker.** Plataforma de ML *managed* de AWS: training
+  jobs, experiments, model registry, feature store y endpoints, todo
+  gestionado por el proveedor.
 
 ## Resultado de la Decisión
 
@@ -84,7 +87,15 @@ análoga. Neptune (C) comparte el perfil SaaS de B, sin ventaja que justifique
 la dependencia externa. DVC (D) versiona datos y pipelines sobre Git, pero no
 ofrece un servidor de tracking con UI de comparación de runs ni un model
 registry con estados/transiciones: habría que combinarlo con otras
-herramientas para cubrir lo que MLflow trae integrado.
+herramientas para cubrir lo que MLflow trae integrado. AWS SageMaker (E) es la
+opción *managed* completa, pero desproporcionada e inconveniente para este
+caso: el modelo es CPU trivial (curva de declino + GBM) que no aprovecha su
+training/serving gestionado; la entrega es sin servicio live, así que sus
+endpoints always-on no aplican y se facturan por hora; corre sobre AWS Academy,
+donde las credenciales STS vencen, los SCP restringen servicios y el costo por
+training-job/endpoint consume el budget; y no integra con la plataforma ya
+construida (Postgres, MinIO, Dagster, dbt, DataHub), por lo que sería un stack
+paralelo que fragmenta la arquitectura en vez de reusarla.
 
 ### Consecuencias
 
