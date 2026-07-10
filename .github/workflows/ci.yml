@@ -83,6 +83,39 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: poetry run pytest tests/pipeline --cov=pipeline --cov-report=term-missing
 
+  ml-ci:
+    name: CI ML (librería + gate champion/challenger)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Poetry
+        run: pipx install poetry
+
+      # Las deps de ML (torch CPU ~200MB) hacen caro el install: cachear el
+      # cache de poetry keyed por el lock.
+      - name: Cache de dependencias Poetry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-py3.12-${{ hashFiles('poetry.lock') }}
+
+      - name: Instalar dependencias
+        run: poetry install
+
+      - name: Tests de librería ML (Arps, datos, evaluacion, config)
+        run: poetry run pytest tests/pipeline/test_ml_m3.py -v
+
+      - name: Tests de gate champion/challenger (ADR-0024)
+        run: poetry run pytest tests/pipeline/test_ml_assets.py -v
+
   dbt-ci:
     name: CI dbt Medallion
     runs-on: ubuntu-latest
@@ -147,6 +180,7 @@ jobs:
     needs:
       - test
       - bronze-ci
+      - ml-ci
       - dbt-ci
 
     steps:
