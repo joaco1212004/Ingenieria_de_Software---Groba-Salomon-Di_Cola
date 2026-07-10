@@ -46,7 +46,7 @@ jobs:
         run: poetry run black --check .
 
       - name: Correr tests API
-        run: poetry run pytest tests/test_forecast.py tests/test_metrics.py tests/test_wells.py --cov=api --cov-report=term-missing
+        run: poetry run pytest tests/test_predictions.py tests/test_metrics.py tests/test_wells.py --cov=api --cov-report=term-missing
 
   bronze-ci:
     name: CI Bronze (Dagster + S3)
