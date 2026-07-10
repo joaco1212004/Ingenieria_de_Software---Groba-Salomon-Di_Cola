@@ -17,6 +17,11 @@ services:
       POSTGRES_DB: '${POSTGRES_DB:-warehouse}'
       POSTGRES_USER: '${POSTGRES_USER:-dwh}'
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-dwh}'
+      # Serving online (ADR-0023): la API carga el modelo Production del
+      # registry. Mismo endpoint que usa el training (ADR-0019).
+      MLFLOW_TRACKING_URI: '${MLFLOW_TRACKING_URI:-http://host.docker.internal:5000}'
+    extra_hosts:
+      - host.docker.internal:host-gateway
     depends_on:
       postgres-dwh:
         condition: service_healthy

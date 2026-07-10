@@ -66,7 +66,13 @@ REFERENCIAS:
 
 import time
 
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
+)
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -88,6 +94,23 @@ REQUEST_ERRORS_TOTAL = Counter(
     "predictiva_request_errors_total",
     "Cantidad total de respuestas HTTP con status >= 400.",
     labelnames=("method", "endpoint", "status_code"),
+)
+
+# ─── Metricas de negocio del serving ML (ADR-0023) ──────────────────────────
+# El custom metric del ejemplo de arriba, hecho real: forecasts servidos por
+# resultado. status: 'success' | 'error_model' (sin modelo / registry caido /
+# Arps no ajusta) | 'error_data' (pozo inexistente o sin historia).
+FORECASTS_TOTAL = Counter(
+    "predictiva_forecasts_generated_total",
+    "Total de forecasts solicitados, por resultado.",
+    labelnames=("status",),
+)
+
+# Version del modelo en serving (valor = numero de version en Production).
+# Gauge sin labels: la version es un entero, no hace falta cardinalidad.
+MODEL_VERSION = Gauge(
+    "predictiva_model_version",
+    "Version del modelo del registry que la API esta sirviendo.",
 )
 
 

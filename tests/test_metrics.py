@@ -37,7 +37,17 @@ def test_metrics_payload_contains_expected_metrics():
     assert "predictiva_requests_total" in text
 
 
-def test_forecast_call_increments_counter():
+def test_forecast_call_increments_counter(monkeypatch):
+    # El middleware cuenta TODA request, tambien las que terminan en error.
+    # Sin modelo en el registry el serving responde 503 (ADR-0023): mockeamos
+    # ese camino para que el test sea determinista sin MLflow.
+    from api.ml_model import ModelUnavailable
+
+    def sin_modelo():
+        raise ModelUnavailable("sin modelo en tests")
+
+    monkeypatch.setattr("api.forecast.routes.get_model", sin_modelo)
+
     before = _counter_value(
         _metrics_text(), "predictiva_requests_total", "/api/v1/forecast"
     )
@@ -46,12 +56,12 @@ def test_forecast_call_increments_counter():
         "/api/v1/forecast",
         params={
             "id_well": "WELL-001",
-            "date_start": "2026-03-30",
-            "date_end": "2026-04-02",
+            "date_start": "2027-03-30",
+            "date_end": "2027-04-02",
         },
         headers=API_KEY_HEADER,
     )
-    assert response.status_code == 200
+    assert response.status_code == 503
 
     after = _counter_value(
         _metrics_text(), "predictiva_requests_total", "/api/v1/forecast"
