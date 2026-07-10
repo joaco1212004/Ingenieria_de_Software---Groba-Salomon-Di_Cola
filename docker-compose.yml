@@ -72,6 +72,11 @@ services:
       POSTGRES_DB: '${POSTGRES_DB:-warehouse}'
       POSTGRES_USER: '${POSTGRES_USER:-dwh}'
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-dwh}'
+      # Tracking + registry (ADR-0019). Local: el compose de infra/mlflow
+      # publica :5000 en el host; en EC2-1 apunta a la IP privada de EC2-2.
+      MLFLOW_TRACKING_URI: '${MLFLOW_TRACKING_URI:-http://host.docker.internal:5000}'
+    extra_hosts:
+      - host.docker.internal:host-gateway
     volumes:
       - dagster_home:/opt/dagster/dagster_home
       - ./infra/dagster/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
@@ -134,6 +139,9 @@ services:
       POSTGRES_USER: '${POSTGRES_USER:-dwh}'
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-dwh}'
       DBT_THREADS: '${DBT_THREADS:-2}'
+      MLFLOW_TRACKING_URI: '${MLFLOW_TRACKING_URI:-http://host.docker.internal:5000}'
+    extra_hosts:
+      - host.docker.internal:host-gateway
     volumes:
       - dagster_home:/opt/dagster/dagster_home
       - ./infra/dagster/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro

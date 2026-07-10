@@ -19,6 +19,11 @@ from pipeline.assets.dbt import (
     dbt_executable_from_env,
     medallion_dbt_assets,
 )
+from pipeline.assets.ml import (
+    entrenamiento_m3,
+    registro_m3,
+    validacion_m3,
+)
 from pipeline.assets.raw import (
     listado_pozos_raw,
     produccion_no_convencional_raw,
@@ -31,6 +36,9 @@ pipeline_assets = [
     listado_pozos_raw,
     produccion_no_convencional_raw,
     medallion_dbt_assets,
+    entrenamiento_m3,
+    validacion_m3,
+    registro_m3,
 ]
 
 bronze_daily_job = define_asset_job(
@@ -41,6 +49,13 @@ bronze_daily_job = define_asset_job(
 medallion_daily_job = define_asset_job(
     name="medallion_daily_job",
     selection=AssetSelection.groups("bronze", "raw", "silver", "audit", "gold"),
+)
+
+# Retrain del modelo de declino (ADR-0022): feature mart dbt + train/validate/
+# register. Corre despues del medallion (07:00 vs 06:00) para leer gold fresco.
+ml_training_job = define_asset_job(
+    name="ml_training_job",
+    selection=AssetSelection.groups("ml"),
 )
 
 
@@ -66,10 +81,21 @@ def medallion_daily_schedule(context: ScheduleEvaluationContext):
     return RunRequest(partition_key=partition_key)
 
 
+@schedule(
+    job=ml_training_job,
+    cron_schedule="0 7 * * *",
+    execution_timezone="America/Argentina/Buenos_Aires",
+    default_status=DefaultScheduleStatus.RUNNING,
+)
+def ml_training_schedule(context: ScheduleEvaluationContext):
+    partition_key = context.scheduled_execution_time.strftime("%Y-%m-%d")
+    return RunRequest(partition_key=partition_key)
+
+
 defs = Definitions(
     assets=pipeline_assets,
-    jobs=[bronze_daily_job, medallion_daily_job],
-    schedules=[bronze_daily_schedule, medallion_daily_schedule],
+    jobs=[bronze_daily_job, medallion_daily_job, ml_training_job],
+    schedules=[bronze_daily_schedule, medallion_daily_schedule, ml_training_schedule],
     resources={
         "s3": s3_resource_from_env(),
         "dbt": DbtCliResource(
