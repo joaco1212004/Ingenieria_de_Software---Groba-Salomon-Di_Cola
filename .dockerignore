@@ -9,3 +9,7 @@ htmlcov
 *.pyc
 *.pyo
 *.pyd
+dbt/target
+dbt/logs
+logs
+mlruns
