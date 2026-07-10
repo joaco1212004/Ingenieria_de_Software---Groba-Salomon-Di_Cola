@@ -86,6 +86,35 @@ bash scripts/materialize-bronze.sh YYYY-MM-DD
 
 Tambien se puede lanzar/backfillear desde la UI de Dagster seleccionando las particiones del grupo `bronze`.
 
+### Entrenamiento ML (grupo `ml`, Fase 3)
+
+El modelo de declino M3 (Arps + LSTM sobre el residual log, el mas robusto del
+benchmark de investigacion DCA) se reentrena de forma recurrente con Dagster y
+se trackea/registra en MLflow (ADR-0019 y ADR-0022):
+
+- **Flujo**: `fct_produccion_pozo_mes` (gold) → `fct_features_declino` (feature
+  mart dbt: tasa diaria `prod_pet / tef`, NULL en meses sin operar) →
+  `entrenamiento_m3` → `validacion_m3` (gate champion/challenger por `log_mae`)
+  → `registro_m3` (Model Registry: `None → Staging → Production`).
+- **Job**: `ml_training_job`; schedule diario 07:00 ART (1h despues del
+  medallion). Re-materializar una particion `fecha_extraccion` reentrena con la
+  misma semilla y registra una version nueva: ese es el trigger de retrain.
+- **Tracking**: cada run loggea params (hiperparametros + semilla + tamanos de
+  cohorte), curvas de loss por epoca, medianas de test (`log_mae`, `rmse`,
+  `err_acum_test`, `err_eur_gold`, R² de EUR) y el modelo como artefacto.
+- **Clientes sin credenciales**: solo hace falta `MLFLOW_TRACKING_URI` (el
+  server de MLflow en EC2-2 proxea los artefactos con `--serve-artifacts`).
+
+Local: levantar MLflow junto al stack y correr el job para una particion:
+
+```bash
+docker compose -f infra/mlflow/docker-compose.mlflow.yml --env-file .env up -d
+API_KEY=dev docker compose up -d --build
+# Dagster UI (:3001) -> ml_training_job -> materializar la particion deseada
+```
+
+Para smoke runs, setear `ML_EPOCHS` / `ML_MAX_WELLS` en el `.env`.
+
 ### BI y Gobierno de datos (Fase 2)
 
 BI (Metabase) y gobierno (DataHub) corren en una **segunda instancia (EC2-2)**

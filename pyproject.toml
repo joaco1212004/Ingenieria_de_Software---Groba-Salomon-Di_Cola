@@ -27,6 +27,18 @@ pandas = "2.2.3"
 sqlalchemy = ">=2.0,<3.0"
 psycopg2-binary = ">=2.9,<3.0"
 dbt-postgres = ">=1.9,<2.0"
+# ML (ADR-0019/0022): torch CPU-only (la EC2 no tiene GPU y el wheel CUDA pesa ~2GB),
+# mlflow-skinny pinneado a la version del server (infra/mlflow/Dockerfile).
+numpy = ">=1.26.4,<3"
+scipy = ">=1.13,<1.16"
+torch = { version = "2.7.0+cpu", source = "pytorch-cpu" }
+ruptures = "^1.1.10"
+mlflow-skinny = "2.19.0"
+
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

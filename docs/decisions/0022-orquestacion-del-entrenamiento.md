@@ -22,7 +22,7 @@ pipeline de ML reusa ese orquestador o incorpora uno propio.
   debe dispararse cuando cambian los datos de `fct_produccion_pozo_mes`.
 - Reuso del orquestador ya en producción vs sumar y mantener uno nuevo.
 - Naturaleza del cómputo: el modelo es CPU-bound (curva de declino de Arps +
-  gradient boosting sobre residuos), no requiere GPUs ni entrenamiento
+  LSTM sobre el residual log), no requiere GPUs ni entrenamiento
   distribuido.
 - Footprint: corre sobre las EC2 del equipo con Docker Compose.
 - Testeabilidad en el CI existente ([ADR-0004](0004-ci-con-github-actions.md)).
@@ -62,7 +62,7 @@ pipeline de ML reusa ese orquestador o incorpora uno propio.
   misma UI, el linaje `gold → feature mart → modelo → registry` queda visible
   de punta a punta y exportable a DataHub
   ([ADR-0016](0016-gobierno-de-datos-datahub.md)).
-- **El cómputo es CPU y encaja en la instancia:** Arps + GBM sobre datos
+- **El cómputo es CPU y encaja en la instancia:** Arps + LSTM sobre datos
   tabulares no necesita GPUs ni un cluster; corre en la EC2 con el resto del
   stack.
 

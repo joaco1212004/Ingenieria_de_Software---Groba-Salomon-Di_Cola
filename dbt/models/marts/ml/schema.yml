@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: fct_features_declino
+    description: >
+      Feature mart de declino para el entrenamiento M3 (ADR-0022): tasa diaria
+      de petroleo (prod_pet / tef, NULL en meses sin operar) por pozo-mes, solo
+      pozos con historia minima (>= 12 meses y >= 6 con tasa positiva).
+      Lo consume el asset entrenamiento_m3 del grupo ml.
+    columns:
+      - name: idpozo
+        tests:
+          - not_null
+      - name: fecha_periodo
+        tests:
+          - not_null
