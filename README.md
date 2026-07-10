@@ -1,16 +1,35 @@
-# Plataforma Predictiva - API Mock e Integracion de Datos
+# Plataforma Predictiva - Pronostico de Produccion de Pozos
 
-Este repositorio contiene la API REST mock de la Plataforma Predictiva y la primera implementacion de integracion de datos pedida para la Fase 2.
+Este repositorio contiene la Plataforma Predictiva completa: la API REST de pronosticos, el pipeline de datos medallion (Fase 2) y el loop de MLOps que entrena, versiona y sirve el modelo de declino (Fase 3).
 
 ## Descripcion
 
-El servicio expone endpoints de pozos y forecast para integraciones tempranas. La Fase 2 suma una capa Bronze en S3, orquestada con Dagster, para aterrizar los CSV crudos de datos.gob.ar bajo una arquitectura medallion.
+`GET /api/v1/forecast` devuelve **predicciones reales** de produccion mensual de petroleo por pozo: la API carga el modelo en stage `Production` del registry de MLflow y le suma las features del mart de gold. El pipeline de datos (Bronze S3 → dbt medallion → warehouse) y el de ML (features → training → gate → registry) corren orquestados por Dagster con particiones diarias.
+
+## Arquitectura de la solucion
+
+```text
+datos.gob.ar ──> Bronze S3 ──> raw ──> silver ──> gold (estrella)      [Dagster + dbt]
+                                                    │
+                                    gold.fct_features_declino          [feature mart, ADR-0020]
+                                                    │
+              entrenamiento_m3 ──> validacion_m3 ──> registro_m3       [grupo ml, ADR-0022]
+                     │                (gate log_mae,      │
+                     │                 ADR-0024)          ▼
+                     └────────> MLflow (EC2-2): runs + Model Registry  [ADR-0019]
+                                                          │ stage Production
+                                                          ▼
+   Usuarios REST ──X-API-Key──> API /api/v1/forecast (EC2-1)           [serving online, ADR-0023]
+                                  │  carga modelo Production (cache TTL 5 min)
+                                  └─ features online del MISMO mart de gold
+   Observabilidad: Prometheus + Grafana (EC2-1)  ·  BI Metabase + gobierno DataHub (EC2-2)
+```
 
 ## Componentes
 
 | Servicio | Imagen | Puerto | Rol |
 |----------|--------|--------|-----|
-| `api` | build local (`Dockerfile`) | 8000 | API mock + endpoint `/metrics` para Prometheus |
+| `api` | build local (`Dockerfile`) | 8000 | API de pronosticos (modelo Production del registry) + `/metrics` Prometheus |
 | `dagster-code-server` | build local (`Dockerfile`) | interno | Carga el modulo `pipeline.definitions` una sola vez para webserver y daemon |
 | `dagster-webserver` | build local (`Dockerfile`) | 3001 | UI de gobierno tecnico del pipeline: runs, logs, assets, particiones y status |
 | `dagster-daemon` | build local (`Dockerfile`) | - | Scheduler de Dagster para ejecutar el job Bronze diario |
@@ -40,6 +59,27 @@ curl -H 'X-API-Key: $API_KEY' \
 ```
 
 Sin el header `X-API-Key` los endpoints responden HTTP 403. La API key vive en el `.env` no commiteado de la EC2.
+
+### Serving de predicciones (Fase 3, ADR-0023)
+
+`GET /api/v1/forecast?id_well=<sigla>&date_start=...&date_end=...` predice la
+produccion mensual de petroleo del pozo para meses **futuros** (posteriores a
+su ultimo dato):
+
+- **Modelo**: carga `models:/declino-pozos-m3/Production` del registry MLflow
+  con cache en memoria (TTL 5 min): un retrain promovido pasa a servirse solo,
+  sin redeploy — la respuesta expone `model_version`.
+- **Features online**: la serie historica de tasa diaria del pozo sale de
+  `gold.fct_features_declino`, el mismo feature mart del training (ADR-0020):
+  consistencia train/serve por construccion.
+- **Unidades**: `prod` = tasa diaria predicha (m3/dia) x dias del mes
+  (aproxima un mes de operacion completo); el campo `unit` lo explicita.
+- **Errores explicitos** (sin fallback a historia): `400` rango invalido o que
+  pisa la historia del pozo, `404` sigla inexistente, `503` sin modelo en
+  Production / historia insuficiente / la curva de declino no ajusta.
+- **Observabilidad**: `predictiva_forecasts_generated_total{status}` y
+  `predictiva_model_version` en `/metrics`, ademas de la latencia HTTP
+  (KPI p99 < 5 s).
 
 ### Bronze en S3
 
@@ -187,11 +227,14 @@ poetry run pytest
 - Poetry
 - Docker + Docker Compose
 - GitHub Actions
-- Dagster + dagster-aws
+- Dagster + dagster-aws + dagster-dbt
+- dbt + PostgreSQL (warehouse medallion)
 - AWS S3 para Bronze
+- MLflow (tracking + Model Registry) + PyTorch (LSTM) + scipy (Arps)
 - Prometheus + Grafana + node-exporter
+- Metabase (BI) + DataHub (gobierno)
 - AWS EC2 + DuckDNS
 
 ## Decisiones de diseno
 
-Los ADRs estan en `docs/decisions/`. Cubren CI/CD, dockerizacion, observabilidad, S3 Bronze, orquestacion Dagster, tipo de carga, warehouse, transformaciones, calidad, BI y gobierno de datos.
+Los ADRs estan en `docs/decisions/`. Cubren CI/CD, dockerizacion, observabilidad, S3 Bronze, orquestacion Dagster, tipo de carga, warehouse, transformaciones, calidad, BI, gobierno de datos, y las decisiones de ML de la Fase 3: tracking/registry (0019), feature store (0020), enfoque de modelado (0021), orquestacion del retrain (0022), serving online (0023) y CI/CD del pipeline de ML con gate champion/challenger (0024). El mindmap de la Fase 3 esta en [`docs/adenda-3-mindmap.md`](docs/adenda-3-mindmap.md).
