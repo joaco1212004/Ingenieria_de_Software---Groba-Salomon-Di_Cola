@@ -21,7 +21,9 @@ PARTITION = "2026-06-10"
 @pytest.fixture
 def entorno_mlflow(tmp_path, monkeypatch, df_declino):
     """Tracking en file store temporal + cohorte sintetica + smoke config."""
-    tracking_uri = f"file://{tmp_path}/mlruns"
+    # as_uri(): URI valida en cualquier SO (f"file://{tmp_path}" rompe en
+    # Windows por las barras invertidas)
+    tracking_uri = (tmp_path / "mlruns").as_uri()
     monkeypatch.setenv("MLFLOW_TRACKING_URI", tracking_uri)
     monkeypatch.setenv("ML_EPOCHS", "3")
     monkeypatch.setattr("pipeline.assets.ml.cargar_features", lambda: df_declino)
@@ -84,7 +86,7 @@ def test_ml_gate_retiene_en_staging(entorno_mlflow):
 
 
 def test_ml_entrenamiento_falla_con_cohorte_vacia(tmp_path, monkeypatch, df_declino):
-    monkeypatch.setenv("MLFLOW_TRACKING_URI", f"file://{tmp_path}/mlruns")
+    monkeypatch.setenv("MLFLOW_TRACKING_URI", (tmp_path / "mlruns").as_uri())
     # cohorte vacia: series demasiado cortas para el split temporal
     vacio = df_declino.groupby("idpozo").head(4).reset_index(drop=True)
     monkeypatch.setattr("pipeline.assets.ml.cargar_features", lambda: vacio)
